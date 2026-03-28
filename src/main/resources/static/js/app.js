@@ -1,5 +1,5 @@
 // ============================================================
-// Oficina Inácio & Adriano - Frontend Application
+// Oficina Inácio & Adriano - Neumorphism SPA
 // ============================================================
 
 const API = '';
@@ -23,11 +23,9 @@ function toggleTheme() {
 
 function updateThemeIcon() {
     const icon = document.getElementById('themeIcon');
-    if (document.documentElement.classList.contains('dark')) {
-        icon.className = 'fas fa-sun text-yellow-400';
-    } else {
-        icon.className = 'fas fa-moon text-gray-600';
-    }
+    if (!icon) return;
+    icon.className = document.documentElement.classList.contains('dark')
+        ? 'fas fa-sun' : 'fas fa-moon';
 }
 
 // ============ API HELPERS ============
@@ -37,74 +35,253 @@ async function api(path, options = {}) {
     const res = await fetch(API + path, { ...options, headers });
     if (res.status === 401) { logout(); throw new Error('Sessão expirada'); }
     if (res.status === 204) return null;
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || data.error || 'Erro na requisição');
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((data && (data.message || data.error)) || 'Erro na requisição');
     return data;
 }
 
 // ============ TOAST ============
 function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
-    const inner = toast.querySelector('div');
-    const icon = document.getElementById('toastIcon');
-    const msgEl = document.getElementById('toastMsg');
+    const container = document.getElementById('toastContainer');
+    const iconMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+    const toast = document.createElement('div');
+    toast.className = 'toast-item ' + type;
+    toast.innerHTML = `<i class="toast-icon fas ${iconMap[type] || iconMap.info}"></i><span>${escapeHtml(msg)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.classList.add('removing'); }, 2800);
+    setTimeout(() => { toast.remove(); }, 3200);
+}
 
-    inner.className = 'px-6 py-3 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center space-x-2 toast-in';
-    inner.classList.add(type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600');
-    icon.className = 'fas ' + (type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
-    msgEl.textContent = msg;
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
 
-    toast.classList.remove('hidden');
-    setTimeout(() => { inner.classList.remove('toast-in'); inner.classList.add('toast-out'); }, 2500);
-    setTimeout(() => { toast.classList.add('hidden'); inner.classList.remove('toast-out'); }, 2800);
+// ============ INPUT MASKS ============
+const Masks = {
+    cpf(v)     { return v.replace(/\D/g,'').slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); },
+    cnpj(v)    { return v.replace(/\D/g,'').slice(0,14).replace(/(\d{2})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1/$2').replace(/(\d{4})(\d{1,2})$/,'$1-$2'); },
+    telefone(v){ const d=v.replace(/\D/g,'').slice(0,11); return d.length>10 ? d.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3') : d.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3'); },
+    placa(v)   { const u=v.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7); if(u.length<=3) return u; return u.slice(0,3)+'-'+u.slice(3); },
+    money(v)   { const n=v.replace(/\D/g,''); const f=(parseInt(n||'0',10)/100).toFixed(2); return 'R$ '+f.replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); },
+    integer(v) { return v.replace(/\D/g,''); },
+};
+
+const Validators = {
+    cpf(v) {
+        const d = v.replace(/\D/g,'');
+        if (d.length !== 11) return 'CPF deve ter 11 dígitos';
+        if (/^(\d)\1{10}$/.test(d)) return 'CPF inválido';
+        let sum=0; for(let i=0;i<9;i++) sum+=parseInt(d[i])*(10-i); let r=11-(sum%11); if(r>=10)r=0; if(parseInt(d[9])!==r) return 'CPF inválido';
+        sum=0; for(let i=0;i<10;i++) sum+=parseInt(d[i])*(11-i); r=11-(sum%11); if(r>=10)r=0; if(parseInt(d[10])!==r) return 'CPF inválido';
+        return null;
+    },
+    cnpj(v) {
+        const d = v.replace(/\D/g,'');
+        if (d.length !== 14) return 'CNPJ deve ter 14 dígitos';
+        if (/^(\d)\1{13}$/.test(d)) return 'CNPJ inválido';
+        const w1=[5,4,3,2,9,8,7,6,5,4,3,2], w2=[6,5,4,3,2,9,8,7,6,5,4,3,2];
+        let sum=0; for(let i=0;i<12;i++) sum+=parseInt(d[i])*w1[i]; let r=sum%11<2?0:11-(sum%11); if(parseInt(d[12])!==r) return 'CNPJ inválido';
+        sum=0; for(let i=0;i<13;i++) sum+=parseInt(d[i])*w2[i]; r=sum%11<2?0:11-(sum%11); if(parseInt(d[13])!==r) return 'CNPJ inválido';
+        return null;
+    },
+    telefone(v) {
+        const d = v.replace(/\D/g,'');
+        if (d.length < 10 || d.length > 11) return 'Telefone deve ter 10 ou 11 dígitos';
+        return null;
+    },
+    placa(v) {
+        const u = v.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+        if (u.length !== 7) return 'Placa deve ter 7 caracteres';
+        if (!/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(u)) return 'Formato inválido (ABC-1234 ou ABC1D23)';
+        return null;
+    },
+    email(v) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Email inválido';
+        return null;
+    },
+    minLength(n) { return (v) => v.length < n ? `Mínimo de ${n} caracteres` : null; },
+    required(v) { return (!v || !v.trim()) ? 'Campo obrigatório' : null; },
+    positiveNumber(v) { return (isNaN(v) || Number(v) <= 0) ? 'Deve ser um número positivo' : null; },
+    year(v) { const n=Number(v); return (isNaN(n) || n < 1900 || n > new Date().getFullYear()+2) ? 'Ano inválido' : null; },
+};
+
+function applyMask(input, maskName) {
+    if (!Masks[maskName]) return;
+    input.addEventListener('input', () => {
+        const pos = input.selectionStart;
+        const oldLen = input.value.length;
+        input.value = Masks[maskName](input.value);
+        const newLen = input.value.length;
+        input.setSelectionRange(pos + (newLen - oldLen), pos + (newLen - oldLen));
+    });
+}
+
+function showFieldChip(input, message, type = 'error') {
+    clearFieldChip(input);
+    input.classList.add('is-error');
+    input.classList.remove('is-valid');
+    const chip = document.createElement('div');
+    chip.className = 'field-chip ' + type + ' visible';
+    const iconMap = { error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    chip.innerHTML = `<i class="fas ${iconMap[type] || iconMap.error}"></i><span>${message}</span>`;
+    input.parentElement.appendChild(chip);
+}
+
+function showFieldChipHtml(input, html, type = 'warning') {
+    clearFieldChip(input);
+    input.classList.add('is-error');
+    const chip = document.createElement('div');
+    chip.className = 'field-chip ' + type + ' visible';
+    const iconMap = { error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    chip.innerHTML = `<i class="fas ${iconMap[type]}"></i><span>${html}</span>`;
+    input.parentElement.appendChild(chip);
+}
+
+function clearFieldChip(input) {
+    input.classList.remove('is-error', 'is-valid');
+    const existing = input.parentElement.querySelector('.field-chip');
+    if (existing) existing.remove();
+}
+
+function markValid(input) {
+    clearFieldChip(input);
+    input.classList.add('is-valid');
+}
+
+function validateField(input, validators) {
+    if (!validators || validators.length === 0) return true;
+    const val = input.value.trim();
+    for (const v of validators) {
+        const fn = typeof v === 'function' ? v : Validators[v];
+        if (!fn) continue;
+        const err = fn(val);
+        if (err) { showFieldChip(input, err); return false; }
+    }
+    if (val) markValid(input);
+    else clearFieldChip(input);
+    return true;
+}
+
+function validateForm(form, fields) {
+    let allValid = true;
+    for (const f of fields) {
+        if (!f.validators || f.validators.length === 0) continue;
+        const input = form.querySelector(`[name="${f.name}"]`);
+        if (!input) continue;
+        if (!validateField(input, f.validators)) {
+            allValid = false;
+        }
+    }
+    return allValid;
+}
+
+function setupLiveValidation(form, fields) {
+    for (const f of fields) {
+        const input = form.querySelector(`[name="${f.name}"]`);
+        if (!input) continue;
+        // Apply mask
+        if (f.mask) applyMask(input, f.mask);
+        // Live validation on blur
+        if (f.validators && f.validators.length > 0) {
+            input.addEventListener('blur', () => validateField(input, f.validators));
+            input.addEventListener('input', () => {
+                if (input.classList.contains('is-error')) validateField(input, f.validators);
+            });
+        }
+    }
 }
 
 // ============ MODAL ============
 function openModal(title, bodyHtml) {
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalBody').innerHTML = bodyHtml;
-    document.getElementById('modal').classList.remove('hidden');
+    const modal = document.getElementById('modal');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `<div class="modal-content neu-flat animate-scale-in">
+        <div class="modal-header">
+            <h3>${escapeHtml(title)}</h3>
+            <button onclick="closeModal()" class="neu-btn neu-btn-ghost neu-btn-icon" style="width:36px;height:36px">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">${bodyHtml}</div>
+    </div>`;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 }
 
 function closeModal() {
-    document.getElementById('modal').classList.add('hidden');
+    const modal = document.getElementById('modal');
+    modal.classList.add('closing');
+    setTimeout(() => { modal.className = 'hidden'; }, 250);
+}
+
+function confirmDialog(message) {
+    return new Promise((resolve) => {
+        openModal('Confirmação', `
+            <p style="color:var(--text-secondary);margin-bottom:8px">${escapeHtml(message)}</p>
+            <div class="confirm-actions">
+                <button onclick="closeModal();window.__confirmResolve(false)" class="neu-btn neu-btn-sm">Cancelar</button>
+                <button onclick="closeModal();window.__confirmResolve(true)" class="neu-btn neu-btn-sm neu-btn-danger">Confirmar</button>
+            </div>`);
+        window.__confirmResolve = resolve;
+    });
 }
 
 // ============ AUTH ============
-function showLogin() { document.getElementById('loginTab').classList.remove('hidden'); document.getElementById('registerTab').classList.add('hidden'); }
-function showRegister() { document.getElementById('loginTab').classList.add('hidden'); document.getElementById('registerTab').classList.remove('hidden'); }
+function showLogin() {
+    document.getElementById('loginTab').classList.remove('hidden');
+    document.getElementById('registerTab').classList.add('hidden');
+}
+function showRegister() {
+    document.getElementById('loginTab').classList.add('hidden');
+    document.getElementById('registerTab').classList.remove('hidden');
+}
+
+function showLoginMsg(msg, type) {
+    const el = document.getElementById('loginMsg');
+    el.textContent = msg;
+    el.className = 'login-msg ' + type;
+}
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
         const data = await api('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email: document.getElementById('loginEmail').value, senha: document.getElementById('loginPassword').value })
+            body: JSON.stringify({
+                email: document.getElementById('loginEmail').value,
+                senha: document.getElementById('loginPassword').value
+            })
         });
         token = data.token;
         localStorage.setItem('token', token);
         showApp();
-    } catch (err) { showLoginMsg(err.message, 'red'); }
+    } catch (err) { showLoginMsg(err.message, 'error'); }
 });
 
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const nameInput = document.getElementById('regName');
+    const emailInput = document.getElementById('regEmail');
+    const passInput = document.getElementById('regPassword');
+    let valid = true;
+    if (!nameInput.value.trim()) { showFieldChip(nameInput, 'Nome é obrigatório'); valid = false; } else clearFieldChip(nameInput);
+    if (!validateField(emailInput, ['required', 'email'])) valid = false;
+    if (!validateField(passInput, ['required', Validators.minLength(6)])) valid = false;
+    if (!valid) return;
     try {
         await api('/api/auth/register', {
             method: 'POST',
-            body: JSON.stringify({ nome: document.getElementById('regName').value, email: document.getElementById('regEmail').value, senha: document.getElementById('regPassword').value })
+            body: JSON.stringify({
+                nome: nameInput.value,
+                email: emailInput.value,
+                senha: passInput.value
+            })
         });
-        showLoginMsg('Cadastro realizado! Faça login.', 'green');
+        showLoginMsg('Cadastro realizado! Faça login.', 'success');
         showLogin();
-    } catch (err) { showLoginMsg(err.message, 'red'); }
+    } catch (err) { showLoginMsg(err.message, 'error'); }
 });
-
-function showLoginMsg(msg, color) {
-    const el = document.getElementById('loginMsg');
-    el.textContent = msg;
-    el.className = 'mt-4 text-center text-sm text-' + color + '-600 dark:text-' + color + '-400';
-    el.classList.remove('hidden');
-}
 
 function logout() {
     token = null;
@@ -112,6 +289,7 @@ function logout() {
     document.getElementById('appScreen').classList.add('hidden');
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('loginForm').reset();
+    document.getElementById('loginMsg').className = 'hidden';
 }
 
 // ============ SHOW APP ============
@@ -130,59 +308,152 @@ function showSection(section) {
     currentSection = section;
     document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
     const sec = document.getElementById('sec-' + section);
-    if (sec) sec.classList.remove('hidden');
+    if (sec) {
+        sec.classList.remove('hidden');
+        sec.className = 'section animate-fade-in';
+    }
 
-    document.querySelectorAll('.nav-tab').forEach(t => {
+    document.querySelectorAll('.sidebar-item').forEach(t => {
         t.classList.remove('active');
         if (t.dataset.section === section) t.classList.add('active');
     });
 
     switch (section) {
-        case 'dashboard': loadDashboard(); break;
-        case 'clientes': loadCrud('clientes', 'Clientes', clienteConfig()); break;
-        case 'veiculos': loadCrud('veiculos', 'Veículos', veiculoConfig()); break;
-        case 'mecanicos': loadCrud('mecanicos', 'Mecânicos', mecanicoConfig()); break;
-        case 'pecas': loadCrud('pecas', 'Peças', pecaConfig()); break;
-        case 'fornecedores': loadCrud('fornecedores', 'Fornecedores', fornecedorConfig()); break;
-        case 'ordens': loadCrud('ordens', 'Ordens de Serviço', ordemConfig()); break;
-        case 'pagamentos': loadCrud('pagamentos', 'Pagamentos', pagamentoConfig()); break;
-        case 'profile': loadProfile(); break;
+        case 'dashboard': renderDashboard(); break;
+        case 'clientes': loadCrud('clientes', 'Clientes', 'fa-users', clienteConfig()); break;
+        case 'veiculos': loadCrud('veiculos', 'Veículos', 'fa-car', veiculoConfig()); break;
+        case 'mecanicos': loadCrud('mecanicos', 'Mecânicos', 'fa-hard-hat', mecanicoConfig()); break;
+        case 'pecas': loadCrud('pecas', 'Peças', 'fa-cogs', pecaConfig()); break;
+        case 'fornecedores': loadCrud('fornecedores', 'Fornecedores', 'fa-truck', fornecedorConfig()); break;
+        case 'ordens': loadCrud('ordens', 'Ordens de Serviço', 'fa-clipboard-list', ordemConfig()); break;
+        case 'pagamentos': loadCrud('pagamentos', 'Pagamentos', 'fa-credit-card', pagamentoConfig()); break;
+        case 'profile': renderProfile(); break;
     }
 }
 
 // ============ DASHBOARD ============
-async function loadDashboard() {
-    const cards = document.getElementById('dashboardCards');
+async function renderDashboard() {
+    const container = document.getElementById('sec-dashboard');
+    container.innerHTML = `
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-chart-pie"></i>Dashboard</h2>
+        </div>
+        <div class="stat-grid" id="dashboardCards">
+            <div class="loading-spinner"></div>
+        </div>`;
+
     const stats = [
         { label: 'Clientes', endpoint: '/api/clientes?size=1', icon: 'fa-users', color: 'blue' },
         { label: 'Veículos', endpoint: '/api/veiculos?size=1', icon: 'fa-car', color: 'green' },
         { label: 'Ordens de Serviço', endpoint: '/api/ordens-servico?size=1', icon: 'fa-clipboard-list', color: 'purple' },
         { label: 'Mecânicos', endpoint: '/api/mecanicos?size=1', icon: 'fa-hard-hat', color: 'orange' },
+        { label: 'Peças', endpoint: '/api/pecas?size=1', icon: 'fa-cogs', color: 'pink' },
+        { label: 'Fornecedores', endpoint: '/api/fornecedores?size=1', icon: 'fa-truck', color: 'cyan' },
     ];
 
     let html = '';
-    for (const s of stats) {
+    for (let i = 0; i < stats.length; i++) {
+        const s = stats[i];
         try {
             const data = await api(s.endpoint);
             const total = data.totalElements || 0;
-            html += `<div class="stat-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
-                <div class="flex items-center justify-between">
+            html += `<div class="neu-card stat-card animate-slide-up stagger-${i + 1}">
+                <div style="display:flex;align-items:center;justify-content:space-between">
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">${s.label}</p>
-                        <p class="text-3xl font-bold mt-1">${total}</p>
+                        <p class="stat-label">${s.label}</p>
+                        <p class="stat-value">${total}</p>
                     </div>
-                    <div class="w-12 h-12 bg-${s.color}-100 dark:bg-${s.color}-900/30 rounded-xl flex items-center justify-center">
-                        <i class="fas ${s.icon} text-${s.color}-600 dark:text-${s.color}-400 text-xl"></i>
+                    <div class="stat-icon ${s.color}">
+                        <i class="fas ${s.icon}"></i>
                     </div>
                 </div>
             </div>`;
-        } catch { html += ''; }
+        } catch { /* skip */ }
     }
-    cards.innerHTML = html;
+    document.getElementById('dashboardCards').innerHTML = html || '<div class="empty-state"><i class="fas fa-chart-bar"></i><p>Nenhum dado disponível</p></div>';
 }
 
 // ============ PROFILE ============
-async function loadProfile() {
+function renderProfile() {
+    const container = document.getElementById('sec-profile');
+    container.innerHTML = `
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-user-cog"></i>Perfil</h2>
+        </div>
+        <div class="profile-grid">
+            <div class="neu-card" style="padding:28px">
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;color:var(--text)">
+                    <i class="fas fa-user" style="color:var(--primary);margin-right:8px"></i>Dados Pessoais
+                </h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label class="form-label">Nome</label>
+                        <input type="text" id="profileName" class="neu-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="profileEmail" class="neu-input" required>
+                    </div>
+                    <button type="submit" class="neu-btn neu-btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </form>
+            </div>
+            <div class="neu-card" style="padding:28px">
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;color:var(--text)">
+                    <i class="fas fa-lock" style="color:var(--accent);margin-right:8px"></i>Alterar Senha
+                </h3>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label class="form-label">Senha Atual</label>
+                        <input type="password" id="currentPassword" class="neu-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nova Senha</label>
+                        <input type="password" id="newPassword" class="neu-input" required minlength="6">
+                    </div>
+                    <button type="submit" class="neu-btn neu-btn-accent">
+                        <i class="fas fa-key"></i> Alterar Senha
+                    </button>
+                </form>
+            </div>
+        </div>`;
+
+    loadProfileData();
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await api('/api/auth/profile', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    nome: document.getElementById('profileName').value,
+                    email: document.getElementById('profileEmail').value
+                })
+            });
+            showToast('Perfil atualizado!');
+            const profile = await api('/api/auth/profile');
+            document.getElementById('userName').textContent = profile.nome;
+        } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await api('/api/auth/password', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    senhaAtual: document.getElementById('currentPassword').value,
+                    novaSenha: document.getElementById('newPassword').value
+                })
+            });
+            showToast('Senha alterada!');
+            document.getElementById('passwordForm').reset();
+        } catch (err) { showToast(err.message, 'error'); }
+    });
+}
+
+async function loadProfileData() {
     try {
         const profile = await api('/api/auth/profile');
         document.getElementById('profileName').value = profile.nome;
@@ -190,60 +461,84 @@ async function loadProfile() {
     } catch {}
 }
 
-document.getElementById('profileForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        await api('/api/auth/profile', { method: 'PUT', body: JSON.stringify({ nome: document.getElementById('profileName').value, email: document.getElementById('profileEmail').value }) });
-        showToast('Perfil atualizado!');
-        const profile = await api('/api/auth/profile');
-        document.getElementById('userName').textContent = profile.nome;
-    } catch (err) { showToast(err.message, 'error'); }
-});
-
-document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        await api('/api/auth/password', { method: 'PUT', body: JSON.stringify({ senhaAtual: document.getElementById('currentPassword').value, novaSenha: document.getElementById('newPassword').value }) });
-        showToast('Senha alterada!');
-        document.getElementById('passwordForm').reset();
-    } catch (err) { showToast(err.message, 'error'); }
-});
-
 // ============ GENERIC CRUD ENGINE ============
-const inputClass = 'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 outline-none transition text-sm';
-
 function buildFormField(f, value) {
     const val = value !== undefined && value !== null ? value : '';
+    const hintHtml = f.hint ? `<span class="field-hint">${escapeHtml(f.hint)}</span>` : '';
+
     if (f.type === 'select') {
-        const opts = (f.options || []).map(o => `<option value="${o.value}" ${String(o.value) === String(val) ? 'selected' : ''}>${o.label}</option>`).join('');
-        return `<div><label class="block text-sm font-medium mb-1">${f.label}</label><select name="${f.name}" class="${inputClass}" ${f.required ? 'required' : ''}><option value="">Selecione...</option>${opts}</select></div>`;
+        const hasOptions = f.options && f.options.length > 0;
+        const opts = (f.options || []).map(o =>
+            `<option value="${o.value}" ${String(o.value) === String(val) ? 'selected' : ''}>${escapeHtml(String(o.label))}</option>`
+        ).join('');
+
+        // Dependency warning for empty selects
+        let chipHtml = '';
+        if (!hasOptions && f.emptyMsg) {
+            const linkPart = f.emptyLink
+                ? ` <a onclick="closeModal();showSection('${f.emptyLink}')">${escapeHtml(f.emptyLinkLabel || 'Cadastrar')}</a>`
+                : '';
+            chipHtml = `<div class="field-chip warning visible"><i class="fas fa-exclamation-triangle"></i><span>${escapeHtml(f.emptyMsg)}${linkPart}</span></div>`;
+        }
+
+        return `<div class="form-group">
+            <label class="form-label">${escapeHtml(f.label)}</label>
+            <select name="${f.name}" class="neu-input${!hasOptions ? ' is-error' : ''}" ${f.required ? 'required' : ''} ${!hasOptions ? 'disabled' : ''}>
+                <option value="">${hasOptions ? 'Selecione...' : 'Nenhum disponível'}</option>${opts}
+            </select>
+            ${chipHtml}${hintHtml}
+        </div>`;
     }
-    return `<div><label class="block text-sm font-medium mb-1">${f.label}</label><input type="${f.type || 'text'}" name="${f.name}" value="${val}" class="${inputClass}" ${f.required ? 'required' : ''} ${f.step ? 'step="' + f.step + '"' : ''}></div>`;
+
+    const inputType = (f.mask === 'money' || f.mask === 'cpf' || f.mask === 'cnpj' || f.mask === 'telefone' || f.mask === 'placa') ? 'text' : (f.type || 'text');
+    const displayVal = f.mask && val ? (Masks[f.mask] ? Masks[f.mask](String(val)) : val) : val;
+    const placeholderAttr = f.placeholder ? `placeholder="${escapeHtml(f.placeholder)}"` : '';
+
+    return `<div class="form-group">
+        <label class="form-label">${escapeHtml(f.label)}</label>
+        <input type="${inputType}" name="${f.name}" value="${escapeHtml(String(displayVal))}" class="neu-input"
+            ${f.required ? 'required' : ''} ${f.step ? 'step="' + f.step + '"' : ''} ${placeholderAttr}
+            ${f.maxlength ? 'maxlength="' + f.maxlength + '"' : ''}>
+        ${hintHtml}
+    </div>`;
 }
 
-async function loadCrud(section, title, config) {
+async function loadCrud(section, title, icon, config) {
     const container = document.getElementById('sec-' + section);
-    container.innerHTML = `<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <h2 class="text-2xl font-bold">${title}</h2>
-        <button onclick="openCreateModal_${section}()" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-xl transition text-sm shadow-lg shadow-primary-500/25">
-            <i class="fas fa-plus mr-1"></i>Novo
-        </button>
-    </div>
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
-        <table class="data-table"><thead><tr>${config.columns.map(c => `<th>${c.label}</th>`).join('')}<th>Ações</th></tr></thead><tbody id="table-${section}"><tr><td colspan="${config.columns.length + 1}" class="text-center py-8 text-gray-400">Carregando...</td></tr></tbody></table>
-    </div>
-    <div id="pagination-${section}" class="flex justify-center gap-2 mt-4"></div>`;
+    container.innerHTML = `
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas ${icon}"></i>${escapeHtml(title)}</h2>
+            <button onclick="openCreateModal_${section}()" class="neu-btn neu-btn-primary">
+                <i class="fas fa-plus"></i> Novo
+            </button>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr>${config.columns.map(c => `<th>${escapeHtml(c.label)}</th>`).join('')}<th>Ações</th></tr></thead>
+                <tbody id="table-${section}">
+                    <tr><td colspan="${config.columns.length + 1}"><div class="loading-spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="pagination-${section}" class="pagination"></div>`;
 
     window['openCreateModal_' + section] = async () => {
         const fields = await config.formFields();
-        const html = `<form id="createForm-${section}" class="space-y-4">${fields.map(f => buildFormField(f, '')).join('')}
-            <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 rounded-xl transition">
-                <i class="fas fa-save mr-1"></i>Salvar</button></form>`;
+        const html = `<form id="createForm-${section}">
+            ${fields.map(f => buildFormField(f, '')).join('')}
+            <button type="submit" class="neu-btn neu-btn-primary" style="width:100%;margin-top:8px">
+                <i class="fas fa-save"></i> Salvar
+            </button>
+        </form>`;
         openModal('Novo ' + title.replace(/s$/, ''), html);
-        document.getElementById('createForm-' + section).addEventListener('submit', async (e) => {
+        const form = document.getElementById('createForm-' + section);
+        setupLiveValidation(form, fields);
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!validateForm(form, fields)) { showToast('Corrija os campos destacados', 'error'); return; }
             const formData = Object.fromEntries(new FormData(e.target));
-            config.prepareData && config.prepareData(formData);
+            if (config.cleanData) config.cleanData(formData);
+            if (config.prepareData) config.prepareData(formData);
             try {
                 await api(config.apiPath, { method: 'POST', body: JSON.stringify(formData) });
                 closeModal();
@@ -256,14 +551,21 @@ async function loadCrud(section, title, config) {
     window['openEditModal_' + section] = async (id) => {
         const item = await api(config.apiPath + '/' + id);
         const fields = await config.formFields();
-        const html = `<form id="editForm-${section}" class="space-y-4">${fields.map(f => buildFormField(f, config.getFieldValue ? config.getFieldValue(f.name, item) : item[f.name])).join('')}
-            <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 rounded-xl transition">
-                <i class="fas fa-save mr-1"></i>Atualizar</button></form>`;
+        const html = `<form id="editForm-${section}">
+            ${fields.map(f => buildFormField(f, config.getFieldValue ? config.getFieldValue(f.name, item) : item[f.name])).join('')}
+            <button type="submit" class="neu-btn neu-btn-primary" style="width:100%;margin-top:8px">
+                <i class="fas fa-save"></i> Atualizar
+            </button>
+        </form>`;
         openModal('Editar ' + title.replace(/s$/, ''), html);
-        document.getElementById('editForm-' + section).addEventListener('submit', async (e) => {
+        const form = document.getElementById('editForm-' + section);
+        setupLiveValidation(form, fields);
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!validateForm(form, fields)) { showToast('Corrija os campos destacados', 'error'); return; }
             const formData = Object.fromEntries(new FormData(e.target));
-            config.prepareData && config.prepareData(formData);
+            if (config.cleanData) config.cleanData(formData);
+            if (config.prepareData) config.prepareData(formData);
             try {
                 await api(config.apiPath + '/' + id, { method: 'PUT', body: JSON.stringify(formData) });
                 closeModal();
@@ -274,7 +576,8 @@ async function loadCrud(section, title, config) {
     };
 
     window['deleteItem_' + section] = async (id) => {
-        if (!confirm('Tem certeza que deseja excluir?')) return;
+        const ok = await confirmDialog('Tem certeza que deseja excluir este registro?');
+        if (!ok) return;
         try {
             await api(config.apiPath + '/' + id, { method: 'DELETE' });
             showToast('Excluído com sucesso!');
@@ -293,15 +596,25 @@ async function loadCrudData(section, config, page) {
         const isPage = !!data.content;
 
         if (items.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${config.columns.length + 1}" class="text-center py-8 text-gray-400">Nenhum registro encontrado</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="${config.columns.length + 1}">
+                <div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhum registro encontrado</p></div>
+            </td></tr>`;
         } else {
             tbody.innerHTML = items.map(item => {
                 const idVal = config.getId(item);
-                return `<tr>${config.columns.map(c => `<td>${c.render ? c.render(item) : (item[c.key] ?? '-')}</td>`).join('')}
-                    <td class="flex gap-2">
-                        <button onclick="openEditModal_${section}(${idVal})" class="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteItem_${section}(${idVal})" class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"><i class="fas fa-trash"></i></button>
-                    </td></tr>`;
+                return `<tr class="animate-fade-in">
+                    ${config.columns.map(c => `<td>${c.render ? c.render(item) : escapeHtml(String(item[c.key] ?? '-'))}</td>`).join('')}
+                    <td>
+                        <div class="table-actions">
+                            <button onclick="openEditModal_${section}(${idVal})" class="table-action-btn edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteItem_${section}(${idVal})" class="table-action-btn delete" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
             }).join('');
         }
 
@@ -309,13 +622,16 @@ async function loadCrudData(section, config, page) {
             const pag = document.getElementById('pagination-' + section);
             let pagHtml = '';
             for (let i = 0; i < data.totalPages; i++) {
-                pagHtml += `<button onclick="loadCrudData('${section}', window['${section}Config'], ${i})" class="px-3 py-1 rounded-lg text-sm ${i === page ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}">${i + 1}</button>`;
+                pagHtml += `<button onclick="loadCrudData('${section}', window['${section}Config'], ${i})"
+                    class="pagination-btn ${i === page ? 'active' : ''}">${i + 1}</button>`;
             }
             pag.innerHTML = pagHtml;
         }
         window[section + 'Config'] = config;
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="${config.columns.length + 1}" class="text-center py-8 text-red-400">${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${config.columns.length + 1}">
+            <div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>${escapeHtml(err.message)}</p></div>
+        </td></tr>`;
     }
 }
 
@@ -327,14 +643,15 @@ function clienteConfig() {
         columns: [
             { label: 'ID', key: 'codCliente' },
             { label: 'Nome', key: 'nome' },
-            { label: 'CPF', key: 'cpf' },
-            { label: 'Telefone', key: 'telefone' },
+            { label: 'CPF', key: 'cpf', render: i => escapeHtml(Masks.cpf(String(i.cpf || ''))) },
+            { label: 'Telefone', key: 'telefone', render: i => escapeHtml(Masks.telefone(String(i.telefone || ''))) },
         ],
         formFields: async () => [
-            { name: 'nome', label: 'Nome', required: true },
-            { name: 'cpf', label: 'CPF', required: true },
-            { name: 'telefone', label: 'Telefone', required: true },
+            { name: 'nome', label: 'Nome', required: true, placeholder: 'Nome completo', validators: ['required'] },
+            { name: 'cpf', label: 'CPF', required: true, mask: 'cpf', placeholder: '000.000.000-00', hint: 'Formato: 000.000.000-00', validators: ['required', 'cpf'] },
+            { name: 'telefone', label: 'Telefone', required: true, mask: 'telefone', placeholder: '(00) 00000-0000', hint: 'Formato: (00) 00000-0000', validators: ['required', 'telefone'] },
         ],
+        cleanData: d => { d.cpf = d.cpf.replace(/\D/g,''); d.telefone = d.telefone.replace(/\D/g,''); },
     };
 }
 
@@ -352,11 +669,12 @@ function veiculoConfig() {
         formFields: async () => {
             const modelos = await api('/api/modelos');
             const clientes = await api('/api/clientes?size=100');
+            const clienteList = (clientes.content || clientes);
             return [
-                { name: 'placa', label: 'Placa', required: true },
-                { name: 'codModelo', label: 'Modelo', type: 'select', required: true, options: modelos.map(m => ({ value: m.codModelo, label: m.nome })) },
-                { name: 'ano', label: 'Ano', type: 'number', required: true },
-                { name: 'codCliente', label: 'Cliente', type: 'select', required: true, options: (clientes.content || clientes).map(c => ({ value: c.codCliente, label: c.nome })) },
+                { name: 'placa', label: 'Placa', required: true, mask: 'placa', placeholder: 'ABC-1234', hint: 'Formato: ABC-1234 ou ABC1D23', validators: ['required', 'placa'] },
+                { name: 'codModelo', label: 'Modelo', type: 'select', required: true, options: modelos.map(m => ({ value: m.codModelo, label: m.nome })), emptyMsg: 'Nenhum modelo cadastrado' },
+                { name: 'ano', label: 'Ano', type: 'number', required: true, placeholder: new Date().getFullYear().toString(), validators: ['required', 'year'], hint: '1900 - ' + (new Date().getFullYear()+1) },
+                { name: 'codCliente', label: 'Cliente', type: 'select', required: true, options: clienteList.map(c => ({ value: c.codCliente, label: c.nome })), emptyMsg: 'Nenhum cliente cadastrado.', emptyLink: 'clientes', emptyLinkLabel: 'Cadastrar cliente' },
             ];
         },
         prepareData: d => { d.codModelo = Number(d.codModelo); d.ano = Number(d.ano); d.codCliente = Number(d.codCliente); },
@@ -376,9 +694,9 @@ function mecanicoConfig() {
         formFields: async () => {
             const esp = await api('/api/especialidades');
             return [
-                { name: 'nome', label: 'Nome', required: true },
-                { name: 'codEspecialidade', label: 'Especialidade', type: 'select', required: true, options: esp.map(e => ({ value: e.codEspecialidade, label: e.nome })) },
-                { name: 'comissaoPercentual', label: 'Comissão (%)', type: 'number', step: '0.01', required: true },
+                { name: 'nome', label: 'Nome', required: true, placeholder: 'Nome do mecânico', validators: ['required'] },
+                { name: 'codEspecialidade', label: 'Especialidade', type: 'select', required: true, options: esp.map(e => ({ value: e.codEspecialidade, label: e.nome })), emptyMsg: 'Nenhuma especialidade cadastrada' },
+                { name: 'comissaoPercentual', label: 'Comissão (%)', type: 'number', step: '0.01', required: true, placeholder: '10.00', validators: ['required', 'positiveNumber'], hint: 'Percentual de comissão (ex: 10.50)' },
             ];
         },
         prepareData: d => { d.codEspecialidade = Number(d.codEspecialidade); d.comissaoPercentual = Number(d.comissaoPercentual); },
@@ -400,13 +718,18 @@ function pecaConfig() {
         formFields: async () => {
             const cats = await api('/api/categorias-pecas');
             const forns = await api('/api/fornecedores?size=100');
+            const fornList = (forns.content || forns);
             return [
-                { name: 'nome', label: 'Nome', required: true },
-                { name: 'precoVenda', label: 'Preço Venda', type: 'number', step: '0.01', required: true },
-                { name: 'estoqueMinimo', label: 'Estoque Mínimo', type: 'number', required: true },
-                { name: 'codCategoria', label: 'Categoria', type: 'select', required: true, options: cats.map(c => ({ value: c.codCategoria, label: c.nome })) },
-                { name: 'codFornecedor', label: 'Fornecedor', type: 'select', required: true, options: (forns.content || forns).map(f => ({ value: f.codFornecedor, label: f.razaoSocial })) },
+                { name: 'nome', label: 'Nome', required: true, placeholder: 'Nome da peça', validators: ['required'] },
+                { name: 'precoVenda', label: 'Preço Venda (R$)', mask: 'money', required: true, placeholder: 'R$ 0,00', validators: ['required'], hint: 'Valor em reais' },
+                { name: 'estoqueMinimo', label: 'Estoque Mínimo', mask: 'integer', type: 'text', required: true, placeholder: '0', validators: ['required', 'positiveNumber'] },
+                { name: 'codCategoria', label: 'Categoria', type: 'select', required: true, options: cats.map(c => ({ value: c.codCategoria, label: c.nome })), emptyMsg: 'Nenhuma categoria cadastrada' },
+                { name: 'codFornecedor', label: 'Fornecedor', type: 'select', required: true, options: fornList.map(f => ({ value: f.codFornecedor, label: f.razaoSocial })), emptyMsg: 'Nenhum fornecedor cadastrado.', emptyLink: 'fornecedores', emptyLinkLabel: 'Cadastrar fornecedor' },
             ];
+        },
+        cleanData: d => {
+            d.precoVenda = d.precoVenda.replace(/[R$\s.]/g,'').replace(',','.');
+            d.estoqueMinimo = d.estoqueMinimo.replace(/\D/g,'');
         },
         prepareData: d => { d.precoVenda = Number(d.precoVenda); d.estoqueMinimo = Number(d.estoqueMinimo); d.codCategoria = Number(d.codCategoria); d.codFornecedor = Number(d.codFornecedor); },
     };
@@ -419,17 +742,18 @@ function fornecedorConfig() {
         columns: [
             { label: 'ID', key: 'codFornecedor' },
             { label: 'Razão Social', key: 'razaoSocial' },
-            { label: 'CNPJ', key: 'cnpj' },
+            { label: 'CNPJ', key: 'cnpj', render: i => escapeHtml(Masks.cnpj(String(i.cnpj || ''))) },
             { label: 'Cidade', key: 'cidade' },
         ],
         formFields: async () => {
             const cidades = await api('/api/cidades');
             return [
-                { name: 'razaoSocial', label: 'Razão Social', required: true },
-                { name: 'cnpj', label: 'CNPJ', required: true },
-                { name: 'codCidade', label: 'Cidade', type: 'select', required: true, options: cidades.map(c => ({ value: c.codCidade, label: c.nome + '/' + c.uf })) },
+                { name: 'razaoSocial', label: 'Razão Social', required: true, placeholder: 'Nome da empresa', validators: ['required'] },
+                { name: 'cnpj', label: 'CNPJ', required: true, mask: 'cnpj', placeholder: '00.000.000/0000-00', hint: 'Formato: 00.000.000/0000-00', validators: ['required', 'cnpj'] },
+                { name: 'codCidade', label: 'Cidade', type: 'select', required: true, options: cidades.map(c => ({ value: c.codCidade, label: c.nome + '/' + c.uf })), emptyMsg: 'Nenhuma cidade cadastrada' },
             ];
         },
+        cleanData: d => { d.cnpj = d.cnpj.replace(/\D/g,''); },
         prepareData: d => { d.codCidade = Number(d.codCidade); },
     };
 }
@@ -444,18 +768,24 @@ function ordemConfig() {
             { label: 'KM Atual', key: 'kmAtual' },
             { label: 'Veículo', key: 'veiculo' },
             { label: 'Cliente', key: 'cliente' },
-            { label: 'Status', key: 'status', render: i => `<span class="px-2 py-1 rounded-lg text-xs font-semibold ${i.status === 'Finalizado' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : i.status === 'Cancelado' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'}">${i.status}</span>` },
+            { label: 'Status', key: 'status', render: i => {
+                const s = String(i.status || '');
+                const cls = s === 'Finalizado' ? 'badge-success' : s === 'Cancelado' ? 'badge-danger' : 'badge-warning';
+                return `<span class="badge ${cls}">${escapeHtml(s)}</span>`;
+            }},
         ],
         formFields: async () => {
             const veiculos = await api('/api/veiculos?size=100');
             const statuses = await api('/api/status');
+            const veicList = (veiculos.content || veiculos);
             return [
-                { name: 'dataEntrada', label: 'Data Entrada', type: 'date' },
-                { name: 'kmAtual', label: 'KM Atual', type: 'number' },
-                { name: 'codVeiculo', label: 'Veículo', type: 'select', required: true, options: (veiculos.content || veiculos).map(v => ({ value: v.codVeiculo, label: v.placa + ' - ' + v.modelo })) },
-                { name: 'codStatus', label: 'Status', type: 'select', required: true, options: statuses.map(s => ({ value: s.codStatus, label: s.descricao })) },
+                { name: 'dataEntrada', label: 'Data Entrada', type: 'date', hint: 'Data de entrada do veículo' },
+                { name: 'kmAtual', label: 'KM Atual', mask: 'integer', type: 'text', placeholder: '0', hint: 'Quilometragem atual do veículo' },
+                { name: 'codVeiculo', label: 'Veículo', type: 'select', required: true, options: veicList.map(v => ({ value: v.codVeiculo, label: v.placa + ' - ' + v.modelo })), emptyMsg: 'Nenhum veículo cadastrado.', emptyLink: 'veiculos', emptyLinkLabel: 'Cadastrar veículo' },
+                { name: 'codStatus', label: 'Status', type: 'select', required: true, options: statuses.map(s => ({ value: s.codStatus, label: s.descricao })), emptyMsg: 'Nenhum status disponível' },
             ];
         },
+        cleanData: d => { if (d.kmAtual) d.kmAtual = d.kmAtual.replace(/\D/g,''); },
         prepareData: d => { d.codVeiculo = Number(d.codVeiculo); d.codStatus = Number(d.codStatus); d.kmAtual = d.kmAtual ? Number(d.kmAtual) : null; d.dataEntrada = d.dataEntrada || null; },
     };
 }
@@ -474,12 +804,16 @@ function pagamentoConfig() {
         formFields: async () => {
             const ordens = await api('/api/ordens-servico?size=100');
             const formas = await api('/api/formas-pagamento');
+            const ordList = (ordens.content || ordens);
             return [
-                { name: 'valor', label: 'Valor (R$)', type: 'number', step: '0.01', required: true },
-                { name: 'data', label: 'Data', type: 'date' },
-                { name: 'codOrdem', label: 'Ordem de Serviço', type: 'select', required: true, options: (ordens.content || ordens).map(o => ({ value: o.codOrdem, label: '#' + o.codOrdem + ' - ' + o.veiculo })) },
-                { name: 'codForma', label: 'Forma de Pagamento', type: 'select', required: true, options: formas.map(f => ({ value: f.codForma, label: f.nome })) },
+                { name: 'valor', label: 'Valor (R$)', mask: 'money', required: true, placeholder: 'R$ 0,00', validators: ['required'], hint: 'Valor do pagamento' },
+                { name: 'data', label: 'Data', type: 'date', hint: 'Data do pagamento' },
+                { name: 'codOrdem', label: 'Ordem de Serviço', type: 'select', required: true, options: ordList.map(o => ({ value: o.codOrdem, label: '#' + o.codOrdem + ' - ' + (o.veiculo || '') })), emptyMsg: 'Nenhuma OS cadastrada.', emptyLink: 'ordens', emptyLinkLabel: 'Cadastrar OS' },
+                { name: 'codForma', label: 'Forma de Pagamento', type: 'select', required: true, options: formas.map(f => ({ value: f.codForma, label: f.nome })), emptyMsg: 'Nenhuma forma de pagamento disponível' },
             ];
+        },
+        cleanData: d => {
+            d.valor = d.valor.replace(/[R$\s.]/g,'').replace(',','.');
         },
         prepareData: d => { d.valor = Number(d.valor); d.codOrdem = Number(d.codOrdem); d.codForma = Number(d.codForma); d.data = d.data || null; },
     };
@@ -487,4 +821,4 @@ function pagamentoConfig() {
 
 // ============ INIT ============
 initTheme();
-if (token) showApp(); else { document.getElementById('loginScreen').classList.remove('hidden'); }
+if (token) showApp(); else document.getElementById('loginScreen').classList.remove('hidden');
