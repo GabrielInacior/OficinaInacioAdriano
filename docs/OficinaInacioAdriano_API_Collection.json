@@ -1,0 +1,808 @@
+{
+  "info": {
+    "name": "Oficina Inácio & Adriano - API",
+    "description": "Coleção completa de testes para todas as rotas da API REST.\n\n## Como usar:\n1. Importe no Postman ou Insomnia\n2. Execute 'Auth > Register' para criar usuário\n3. Execute 'Auth > Login' para obter o token JWT\n4. O token é salvo automaticamente na variável {{token}}\n5. Todas as outras requisições usam {{token}} no header Authorization",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "description": "Autenticação e gerenciamento de conta",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Administrador\",\n  \"email\": \"admin@oficina.com\",\n  \"senha\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.test('Registro OK', () => { pm.response.to.have.status(201); });",
+                  "  const body = pm.response.json();",
+                  "  pm.test('Retorna id', () => { pm.expect(body.id).to.be.a('number'); });",
+                  "  pm.test('Retorna nome', () => { pm.expect(body.nome).to.eql('Administrador'); });",
+                  "  pm.test('Retorna email', () => { pm.expect(body.email).to.eql('admin@oficina.com'); });",
+                  "  pm.test('Retorna role USER', () => { pm.expect(body.role).to.eql('USER'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@oficina.com\",\n  \"senha\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna token', () => { pm.expect(body.token).to.be.a('string'); });",
+                  "pm.test('Tipo Bearer', () => { pm.expect(body.tipo).to.eql('Bearer'); });",
+                  "pm.collectionVariables.set('token', body.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Credenciais Inválidas",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@oficina.com\",\n  \"senha\": \"senhaerrada\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Retorna 401', () => { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/auth/profile", "host": ["{{baseUrl}}"], "path": ["api","auth","profile"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Perfil OK', () => { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Tem nome', () => { pm.expect(body.nome).to.be.a('string'); });",
+                  "pm.test('Tem email', () => { pm.expect(body.email).to.be.a('string'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Admin Atualizado\",\n  \"email\": \"admin@oficina.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/profile", "host": ["{{baseUrl}}"], "path": ["api","auth","profile"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Atualização OK', () => { pm.response.to.have.status(200); });",
+                  "pm.test('Nome atualizado', () => { pm.expect(pm.response.json().nome).to.eql('Admin Atualizado'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senhaAtual\": \"123456\",\n  \"novaSenha\": \"654321\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/password", "host": ["{{baseUrl}}"], "path": ["api","auth","password"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Senha alterada', () => { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Profile - Sem Token (401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/auth/profile", "host": ["{{baseUrl}}"], "path": ["api","auth","profile"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bloqueado sem token', () => { pm.response.to.have.status(401).or.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Status OS",
+      "description": "CRUD de Status de Ordens de Serviço",
+      "item": [
+        {
+          "name": "List All",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/status", "host": ["{{baseUrl}}"], "path": ["api","status"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('É array', () => pm.expect(pm.response.json()).to.be.an('array'));","pm.test('Tem seed data', () => pm.expect(pm.response.json().length).to.be.at.least(4));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"descricao\": \"Em Teste\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/status", "host": ["{{baseUrl}}"], "path": ["api","status"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","const body = pm.response.json();","pm.test('Descrição OK', () => pm.expect(body.descricao).to.eql('Em Teste'));","pm.collectionVariables.set('statusId', body.codStatus);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/status/1", "host": ["{{baseUrl}}"], "path": ["api","status","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Tem descricao', () => pm.expect(pm.response.json().descricao).to.be.a('string'));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"descricao\": \"Em Teste Atualizado\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/status/{{statusId}}", "host": ["{{baseUrl}}"], "path": ["api","status","{{statusId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/status/{{statusId}}", "host": ["{{baseUrl}}"], "path": ["api","status","{{statusId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "💳 Formas de Pagamento",
+      "description": "CRUD de Formas de Pagamento",
+      "item": [
+        {
+          "name": "List All",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/formas-pagamento", "host": ["{{baseUrl}}"], "path": ["api","formas-pagamento"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Tem seed data', () => pm.expect(pm.response.json().length).to.be.at.least(5));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Cheque\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/formas-pagamento", "host": ["{{baseUrl}}"], "path": ["api","formas-pagamento"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('formaId', pm.response.json().codForma);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/formas-pagamento/1", "host": ["{{baseUrl}}"], "path": ["api","formas-pagamento","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Cheque Atualizado\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/formas-pagamento/{{formaId}}", "host": ["{{baseUrl}}"], "path": ["api","formas-pagamento","{{formaId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/formas-pagamento/{{formaId}}", "host": ["{{baseUrl}}"], "path": ["api","formas-pagamento","{{formaId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "👥 Clientes",
+      "description": "CRUD de Clientes",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/clientes?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","clientes"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Paginação', () => { const b=pm.response.json(); pm.expect(b).to.have.property('content'); pm.expect(b).to.have.property('totalElements'); });"] } }]
+        },
+        {
+          "name": "Search by Nome",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/clientes?nome=jose&page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","clientes"], "query": [{"key":"nome","value":"jose"},{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"José da Silva\",\n  \"cpf\": \"123.456.789-00\",\n  \"telefone\": \"(11) 99999-0001\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/clientes", "host": ["{{baseUrl}}"], "path": ["api","clientes"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","const body = pm.response.json();","pm.test('Nome OK', () => pm.expect(body.nome).to.eql('José da Silva'));","pm.test('CPF OK', () => pm.expect(body.cpf).to.eql('123.456.789-00'));","pm.collectionVariables.set('clienteId', body.codCliente);"] } }]
+        },
+        {
+          "name": "Create - CPF Duplicado (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Duplicado\",\n  \"cpf\": \"123.456.789-00\",\n  \"telefone\": \"(11) 99999-0002\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/clientes", "host": ["{{baseUrl}}"], "path": ["api","clientes"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('409 Conflict', () => pm.response.to.have.status(409));"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/clientes/{{clienteId}}", "host": ["{{baseUrl}}"], "path": ["api","clientes","{{clienteId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('ID correto', () => pm.expect(pm.response.json().codCliente).to.eql(Number(pm.collectionVariables.get('clienteId'))));"] } }]
+        },
+        {
+          "name": "Get By Id - Not Found (404)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/clientes/99999", "host": ["{{baseUrl}}"], "path": ["api","clientes","99999"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('404 Not Found', () => pm.response.to.have.status(404));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"José da Silva Junior\",\n  \"cpf\": \"123.456.789-00\",\n  \"telefone\": \"(11) 88888-0001\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/clientes/{{clienteId}}", "host": ["{{baseUrl}}"], "path": ["api","clientes","{{clienteId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Atualizado', () => pm.expect(pm.response.json().nome).to.eql('José da Silva Junior'));"] } }]
+        },
+        {
+          "name": "Create - Validation Error (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"\",\n  \"cpf\": \"\",\n  \"telefone\": \"\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/clientes", "host": ["{{baseUrl}}"], "path": ["api","clientes"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('400 Bad Request', () => pm.response.to.have.status(400));","pm.test('Validation errors', () => pm.expect(pm.response.json()).to.have.property('errors'));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/clientes/{{clienteId}}", "host": ["{{baseUrl}}"], "path": ["api","clientes","{{clienteId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🏙️ Cidades",
+      "description": "CRUD de Cidades",
+      "item": [
+        {
+          "name": "List All",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/cidades", "host": ["{{baseUrl}}"], "path": ["api","cidades"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Tem seed data', () => pm.expect(pm.response.json().length).to.be.at.least(5));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Curitiba\",\n  \"uf\": \"PR\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cidades", "host": ["{{baseUrl}}"], "path": ["api","cidades"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('cidadeId', pm.response.json().codCidade);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/cidades/1", "host": ["{{baseUrl}}"], "path": ["api","cidades","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Curitiba Atualizada\",\n  \"uf\": \"PR\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/cidades/{{cidadeId}}", "host": ["{{baseUrl}}"], "path": ["api","cidades","{{cidadeId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/cidades/{{cidadeId}}", "host": ["{{baseUrl}}"], "path": ["api","cidades","{{cidadeId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Categorias de Peças",
+      "description": "CRUD de Categorias de Peças",
+      "item": [
+        {
+          "name": "List All",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/categorias-pecas", "host": ["{{baseUrl}}"], "path": ["api","categorias-pecas"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Escapamento\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/categorias-pecas", "host": ["{{baseUrl}}"], "path": ["api","categorias-pecas"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('categoriaId', pm.response.json().codCategoria);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/categorias-pecas/1", "host": ["{{baseUrl}}"], "path": ["api","categorias-pecas","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Escapamento Esportivo\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/categorias-pecas/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["api","categorias-pecas","{{categoriaId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/categorias-pecas/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["api","categorias-pecas","{{categoriaId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🔧 Especialidades",
+      "description": "CRUD de Especialidades de Mecânicos",
+      "item": [
+        {
+          "name": "List All",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/especialidades", "host": ["{{baseUrl}}"], "path": ["api","especialidades"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Tem seed data', () => pm.expect(pm.response.json().length).to.be.at.least(8));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Alinhamento\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/especialidades", "host": ["{{baseUrl}}"], "path": ["api","especialidades"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('especialidadeId', pm.response.json().codEspecialidade);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/especialidades/1", "host": ["{{baseUrl}}"], "path": ["api","especialidades","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Alinhamento e Balanceamento\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/especialidades/{{especialidadeId}}", "host": ["{{baseUrl}}"], "path": ["api","especialidades","{{especialidadeId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/especialidades/{{especialidadeId}}", "host": ["{{baseUrl}}"], "path": ["api","especialidades","{{especialidadeId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🚗 Modelos",
+      "description": "CRUD de Modelos de Veículos",
+      "item": [
+        {
+          "name": "List All",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/modelos", "host": ["{{baseUrl}}"], "path": ["api","modelos"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Tem seed data', () => pm.expect(pm.response.json().length).to.be.at.least(8));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Fusca\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/modelos", "host": ["{{baseUrl}}"], "path": ["api","modelos"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('modeloId', pm.response.json().codModelo);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/modelos/1", "host": ["{{baseUrl}}"], "path": ["api","modelos","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Fusca Itamar\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/modelos/{{modeloId}}", "host": ["{{baseUrl}}"], "path": ["api","modelos","{{modeloId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/modelos/{{modeloId}}", "host": ["{{baseUrl}}"], "path": ["api","modelos","{{modeloId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🚚 Fornecedores",
+      "description": "CRUD de Fornecedores",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/fornecedores?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","fornecedores"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Paginação', () => pm.expect(pm.response.json()).to.have.property('content'));"] } }]
+        },
+        {
+          "name": "Search by Razão Social",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/fornecedores?razaoSocial=auto&page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","fornecedores"], "query": [{"key":"razaoSocial","value":"auto"},{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"razaoSocial\": \"Auto Peças Brasil LTDA\",\n  \"cnpj\": \"12.345.678/0001-90\",\n  \"codCidade\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/fornecedores", "host": ["{{baseUrl}}"], "path": ["api","fornecedores"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('fornecedorId', pm.response.json().codFornecedor);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/fornecedores/{{fornecedorId}}", "host": ["{{baseUrl}}"], "path": ["api","fornecedores","{{fornecedorId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"razaoSocial\": \"Auto Peças Brasil Atualizada\",\n  \"cnpj\": \"12.345.678/0001-90\",\n  \"codCidade\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/fornecedores/{{fornecedorId}}", "host": ["{{baseUrl}}"], "path": ["api","fornecedores","{{fornecedorId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/fornecedores/{{fornecedorId}}", "host": ["{{baseUrl}}"], "path": ["api","fornecedores","{{fornecedorId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🔨 Mecânicos",
+      "description": "CRUD de Mecânicos",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/mecanicos?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","mecanicos"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Paginação', () => pm.expect(pm.response.json()).to.have.property('content'));"] } }]
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Carlos Ferreira\",\n  \"codEspecialidade\": 1,\n  \"comissaoPercentual\": 15.50\n}" },
+            "url": { "raw": "{{baseUrl}}/api/mecanicos", "host": ["{{baseUrl}}"], "path": ["api","mecanicos"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));","pm.collectionVariables.set('mecanicoId', pm.response.json().codMecanico);"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/mecanicos/{{mecanicoId}}", "host": ["{{baseUrl}}"], "path": ["api","mecanicos","{{mecanicoId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Carlos Ferreira Jr.\",\n  \"codEspecialidade\": 2,\n  \"comissaoPercentual\": 18.00\n}" },
+            "url": { "raw": "{{baseUrl}}/api/mecanicos/{{mecanicoId}}", "host": ["{{baseUrl}}"], "path": ["api","mecanicos","{{mecanicoId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/mecanicos/{{mecanicoId}}", "host": ["{{baseUrl}}"], "path": ["api","mecanicos","{{mecanicoId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "🚙 Veículos",
+      "description": "CRUD de Veículos",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/veiculos?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","veiculos"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Paginação', () => pm.expect(pm.response.json()).to.have.property('content'));"] } }]
+        },
+        {
+          "name": "Create (precisa de Cliente antes)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"ABC-1234\",\n  \"codModelo\": 1,\n  \"ano\": 2023,\n  \"codCliente\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/veiculos", "host": ["{{baseUrl}}"], "path": ["api","veiculos"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if(pm.response.code===201){pm.test('201 Created', () => pm.response.to.have.status(201));pm.collectionVariables.set('veiculoId', pm.response.json().codVeiculo);}"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/veiculos/{{veiculoId}}", "host": ["{{baseUrl}}"], "path": ["api","veiculos","{{veiculoId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"ABC-1234\",\n  \"codModelo\": 2,\n  \"ano\": 2024,\n  \"codCliente\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/veiculos/{{veiculoId}}", "host": ["{{baseUrl}}"], "path": ["api","veiculos","{{veiculoId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/veiculos/{{veiculoId}}", "host": ["{{baseUrl}}"], "path": ["api","veiculos","{{veiculoId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Peças",
+      "description": "CRUD de Peças",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pecas?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","pecas"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Search by Nome",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pecas?nome=filtro&page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","pecas"], "query": [{"key":"nome","value":"filtro"},{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Create (precisa Fornecedor antes)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Filtro de Óleo Motor\",\n  \"precoVenda\": 45.90,\n  \"estoqueMinimo\": 10,\n  \"codCategoria\": 5,\n  \"codFornecedor\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/pecas", "host": ["{{baseUrl}}"], "path": ["api","pecas"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if(pm.response.code===201){pm.test('201 Created', () => pm.response.to.have.status(201));pm.collectionVariables.set('pecaId', pm.response.json().codPeca);}"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pecas/{{pecaId}}", "host": ["{{baseUrl}}"], "path": ["api","pecas","{{pecaId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Filtro de Óleo Motor Premium\",\n  \"precoVenda\": 59.90,\n  \"estoqueMinimo\": 15,\n  \"codCategoria\": 5,\n  \"codFornecedor\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/pecas/{{pecaId}}", "host": ["{{baseUrl}}"], "path": ["api","pecas","{{pecaId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/pecas/{{pecaId}}", "host": ["{{baseUrl}}"], "path": ["api","pecas","{{pecaId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "📝 Ordens de Serviço",
+      "description": "CRUD de Ordens de Serviço",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/ordens-servico?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","ordens-servico"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('Paginação', () => pm.expect(pm.response.json()).to.have.property('content'));"] } }]
+        },
+        {
+          "name": "Create (precisa Veículo antes)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dataEntrada\": \"2026-03-28\",\n  \"kmAtual\": 45000,\n  \"codVeiculo\": 1,\n  \"codStatus\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/ordens-servico", "host": ["{{baseUrl}}"], "path": ["api","ordens-servico"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if(pm.response.code===201){pm.test('201 Created', () => pm.response.to.have.status(201));pm.collectionVariables.set('ordemId', pm.response.json().codOrdem);}"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/ordens-servico/{{ordemId}}", "host": ["{{baseUrl}}"], "path": ["api","ordens-servico","{{ordemId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dataEntrada\": \"2026-03-28\",\n  \"kmAtual\": 46000,\n  \"codVeiculo\": 1,\n  \"codStatus\": 2\n}" },
+            "url": { "raw": "{{baseUrl}}/api/ordens-servico/{{ordemId}}", "host": ["{{baseUrl}}"], "path": ["api","ordens-servico","{{ordemId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/ordens-servico/{{ordemId}}", "host": ["{{baseUrl}}"], "path": ["api","ordens-servico","{{ordemId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "💰 Pagamentos",
+      "description": "CRUD de Pagamentos",
+      "item": [
+        {
+          "name": "List All (paginado)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pagamentos?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api","pagamentos"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Create (precisa OS antes)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"valor\": 350.00,\n  \"data\": \"2026-03-28\",\n  \"codOrdem\": 1,\n  \"codForma\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/pagamentos", "host": ["{{baseUrl}}"], "path": ["api","pagamentos"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if(pm.response.code===201){pm.test('201 Created', () => pm.response.to.have.status(201));pm.collectionVariables.set('pagamentoId', pm.response.json().codPagamento);}"] } }]
+        },
+        {
+          "name": "Get By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pagamentos/{{pagamentoId}}", "host": ["{{baseUrl}}"], "path": ["api","pagamentos","{{pagamentoId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"valor\": 500.00,\n  \"data\": \"2026-03-28\",\n  \"codOrdem\": 1,\n  \"codForma\": 2\n}" },
+            "url": { "raw": "{{baseUrl}}/api/pagamentos/{{pagamentoId}}", "host": ["{{baseUrl}}"], "path": ["api","pagamentos","{{pagamentoId}}"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Delete",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/pagamentos/{{pagamentoId}}", "host": ["{{baseUrl}}"], "path": ["api","pagamentos","{{pagamentoId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "👷 Mecânicos x OS (N:N)",
+      "description": "Vínculo Mecânicos em Ordens de Serviço",
+      "item": [
+        {
+          "name": "List By Ordem",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/mecanicos-os/ordem/1", "host": ["{{baseUrl}}"], "path": ["api","mecanicos-os","ordem","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('É array', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }]
+        },
+        {
+          "name": "Create (vincular mecânico à OS)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"codMecanico\": 1,\n  \"codOrdem\": 1,\n  \"horasTrabalhadas\": 4.5\n}" },
+            "url": { "raw": "{{baseUrl}}/api/mecanicos-os", "host": ["{{baseUrl}}"], "path": ["api","mecanicos-os"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if(pm.response.code===201){pm.test('201 Created', () => pm.response.to.have.status(201));}"] } }]
+        },
+        {
+          "name": "Delete (desvincular)",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/mecanicos-os/1/1", "host": ["{{baseUrl}}"], "path": ["api","mecanicos-os","1","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "📦 Peças x OS (N:N)",
+      "description": "Vínculo Peças em Ordens de Serviço",
+      "item": [
+        {
+          "name": "List By Ordem",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pecas-os/ordem/1", "host": ["{{baseUrl}}"], "path": ["api","pecas-os","ordem","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));","pm.test('É array', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }]
+        },
+        {
+          "name": "Create (vincular peça à OS)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"codOrdem\": 1,\n  \"codPeca\": 1,\n  \"quantidade\": 2,\n  \"valorCobrado\": 89.80\n}" },
+            "url": { "raw": "{{baseUrl}}/api/pecas-os", "host": ["{{baseUrl}}"], "path": ["api","pecas-os"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if(pm.response.code===201){pm.test('201 Created', () => pm.response.to.have.status(201));}"] } }]
+        },
+        {
+          "name": "Delete (desvincular)",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/pecas-os/1/1", "host": ["{{baseUrl}}"], "path": ["api","pecas-os","1","1"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
+    }
+  ]
+}
