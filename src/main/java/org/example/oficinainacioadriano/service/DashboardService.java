@@ -1,17 +1,21 @@
 package org.example.oficinainacioadriano.service;
 
-import lombok.RequiredArgsConstructor;
-import org.example.oficinainacioadriano.dto.response.DashboardGraficosResponse;
-import org.example.oficinainacioadriano.dto.response.DashboardResumoResponse;
-import org.example.oficinainacioadriano.repository.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.example.oficinainacioadriano.dto.response.DashboardGraficosResponse;
+import org.example.oficinainacioadriano.dto.response.DashboardResumoResponse;
+import org.example.oficinainacioadriano.repository.MecanicoOrdemServicoRepository;
+import org.example.oficinainacioadriano.repository.OrdemServicoRepository;
+import org.example.oficinainacioadriano.repository.PagamentoRepository;
+import org.example.oficinainacioadriano.repository.PecaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

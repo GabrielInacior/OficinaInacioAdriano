@@ -1,25 +1,35 @@
 package org.example.oficinainacioadriano.service;
 
-import lombok.RequiredArgsConstructor;
-import org.example.oficinainacioadriano.dto.mapper.EntityMapper;
-import org.example.oficinainacioadriano.dto.request.AtualizarStatusOSRequest;
-import org.example.oficinainacioadriano.dto.request.OrdemServicoRequest;
-import org.example.oficinainacioadriano.dto.response.OrdemServicoDetalheResponse;
-import org.example.oficinainacioadriano.dto.response.OrdemServicoResponse;
-import org.example.oficinainacioadriano.entity.*;
-import org.example.oficinainacioadriano.exception.BusinessException;
-import org.example.oficinainacioadriano.exception.ResourceNotFoundException;
-import org.example.oficinainacioadriano.repository.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.example.oficinainacioadriano.dto.mapper.EntityMapper;
+import org.example.oficinainacioadriano.dto.request.AtualizarStatusOSRequest;
+import org.example.oficinainacioadriano.dto.request.OrdemServicoRequest;
+import org.example.oficinainacioadriano.dto.response.OrdemServicoDetalheResponse;
+import org.example.oficinainacioadriano.dto.response.OrdemServicoResponse;
+import org.example.oficinainacioadriano.entity.Cliente;
+import org.example.oficinainacioadriano.entity.HistoricoOS;
+import org.example.oficinainacioadriano.entity.OrdemServico;
+import org.example.oficinainacioadriano.entity.StatusOrdemServico;
+import org.example.oficinainacioadriano.entity.Usuario;
+import org.example.oficinainacioadriano.entity.Veiculo;
+import org.example.oficinainacioadriano.exception.BusinessException;
+import org.example.oficinainacioadriano.exception.ResourceNotFoundException;
+import org.example.oficinainacioadriano.repository.HistoricoOSRepository;
+import org.example.oficinainacioadriano.repository.OrdemServicoRepository;
+import org.example.oficinainacioadriano.repository.StatusOrdemServicoRepository;
+import org.example.oficinainacioadriano.repository.UsuarioRepository;
+import org.example.oficinainacioadriano.repository.VeiculoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

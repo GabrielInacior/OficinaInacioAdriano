@@ -1,7 +1,37 @@
 package org.example.oficinainacioadriano.dto.mapper;
 
-import org.example.oficinainacioadriano.dto.response.*;
-import org.example.oficinainacioadriano.entity.*;
+import org.example.oficinainacioadriano.dto.response.CategoriaPecaResponse;
+import org.example.oficinainacioadriano.dto.response.CidadeResponse;
+import org.example.oficinainacioadriano.dto.response.ClienteResponse;
+import org.example.oficinainacioadriano.dto.response.EspecialidadeResponse;
+import org.example.oficinainacioadriano.dto.response.FormaPagamentoResponse;
+import org.example.oficinainacioadriano.dto.response.FornecedorResponse;
+import org.example.oficinainacioadriano.dto.response.MecanicoOrdemServicoResponse;
+import org.example.oficinainacioadriano.dto.response.MecanicoResponse;
+import org.example.oficinainacioadriano.dto.response.ModeloResponse;
+import org.example.oficinainacioadriano.dto.response.OrdemServicoResponse;
+import org.example.oficinainacioadriano.dto.response.PagamentoResponse;
+import org.example.oficinainacioadriano.dto.response.PecaOrdemServicoResponse;
+import org.example.oficinainacioadriano.dto.response.PecaResponse;
+import org.example.oficinainacioadriano.dto.response.StatusOrdemServicoResponse;
+import org.example.oficinainacioadriano.dto.response.UsuarioResponse;
+import org.example.oficinainacioadriano.dto.response.VeiculoResponse;
+import org.example.oficinainacioadriano.entity.CategoriaPeca;
+import org.example.oficinainacioadriano.entity.Cidade;
+import org.example.oficinainacioadriano.entity.Cliente;
+import org.example.oficinainacioadriano.entity.Especialidade;
+import org.example.oficinainacioadriano.entity.FormaPagamento;
+import org.example.oficinainacioadriano.entity.Fornecedor;
+import org.example.oficinainacioadriano.entity.Mecanico;
+import org.example.oficinainacioadriano.entity.MecanicoOrdemServico;
+import org.example.oficinainacioadriano.entity.Modelo;
+import org.example.oficinainacioadriano.entity.OrdemServico;
+import org.example.oficinainacioadriano.entity.Pagamento;
+import org.example.oficinainacioadriano.entity.Peca;
+import org.example.oficinainacioadriano.entity.PecaOrdemServico;
+import org.example.oficinainacioadriano.entity.StatusOrdemServico;
+import org.example.oficinainacioadriano.entity.Usuario;
+import org.example.oficinainacioadriano.entity.Veiculo;
 import org.springframework.stereotype.Component;
 
 /**
