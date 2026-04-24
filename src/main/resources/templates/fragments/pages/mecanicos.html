@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="page-mecanicos" id="page-mecanicos" class="page">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Mecânicos</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('mecanico')">+ Novo Mecânico</button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Nome</th><th>Especialidade</th><th>Comissão %</th><th>Ações</th></tr></thead>
+        <tbody id="mecanicos-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span class="pagination-info" id="mecanicos-pagination-info"></span>
+      <div class="pagination-controls" id="mecanicos-pagination-controls"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

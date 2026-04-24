@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="page-pagamentos" id="page-pagamentos" class="page">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Pagamentos</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('pagamento')">+ Registrar Pagamento</button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>OS #</th><th>Valor</th><th>Data</th><th>Forma</th><th>Ações</th></tr></thead>
+        <tbody id="pagamentos-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span class="pagination-info" id="pagamentos-pagination-info"></span>
+      <div class="pagination-controls" id="pagamentos-pagination-controls"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

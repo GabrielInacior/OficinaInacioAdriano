@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oficina Inácio Adriano</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     AUTH
+════════════════════════════════════════════ -->
+<div th:replace="~{fragments/auth :: auth-container}"></div>
+
+<!-- ════════════════════════════════════════════
+     APP
+════════════════════════════════════════════ -->
+<div id="app-container">
+
+  <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+  <div class="main-wrapper">
+
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+    <main class="page-content">
+      <div th:replace="~{fragments/pages/dashboard       :: page-dashboard}"></div>
+      <div th:replace="~{fragments/pages/ordens-servico  :: page-ordens-servico}"></div>
+      <div th:replace="~{fragments/pages/os-detalhe      :: page-os-detalhe}"></div>
+      <div th:replace="~{fragments/pages/clientes        :: page-clientes}"></div>
+      <div th:replace="~{fragments/pages/veiculos        :: page-veiculos}"></div>
+      <div th:replace="~{fragments/pages/mecanicos       :: page-mecanicos}"></div>
+      <div th:replace="~{fragments/pages/pecas           :: page-pecas}"></div>
+      <div th:replace="~{fragments/pages/pagamentos      :: page-pagamentos}"></div>
+      <div th:replace="~{fragments/pages/perfil          :: page-perfil}"></div>
+    </main>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MODALS & TOASTS
+════════════════════════════════════════════ -->
+<div th:replace="~{fragments/modals :: modals}"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

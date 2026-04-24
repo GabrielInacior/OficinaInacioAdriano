@@ -4,9 +4,12 @@ import org.example.oficinainacioadriano.entity.Peca;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface PecaRepository extends JpaRepository<Peca, Long> {
     Page<Peca> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
-
     Page<Peca> findByCategoriaCodCategoria(Long codCategoria, Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Peca p WHERE p.estoqueMinimo > 0")
+    long countByEstoqueBaixo();
 }

@@ -1,157 +1,457 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oficina Inácio & Adriano</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oficina Inácio Adriano</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-    <!-- ============ LOGIN SCREEN ============ -->
-    <div id="loginScreen">
-        <div class="login-bg-orbs">
-            <div class="orb"></div>
-            <div class="orb"></div>
-            <div class="orb"></div>
-        </div>
-
-        <div class="login-card neu-flat">
-            <div class="login-logo">
-                <i class="fas fa-wrench" style="color:#fff;font-size:1.6rem"></i>
-            </div>
-            <h1 class="login-title">Oficina Inácio & Adriano</h1>
-            <p class="login-subtitle">Sistema de Gerenciamento</p>
-
-            <!-- Login Tab -->
-            <div id="loginTab">
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="loginEmail" class="neu-input" placeholder="seu@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Senha</label>
-                        <input type="password" id="loginPassword" class="neu-input" placeholder="••••••" required>
-                    </div>
-                    <button type="submit" class="neu-btn neu-btn-primary" style="width:100%;margin-top:8px">
-                        <i class="fas fa-sign-in-alt"></i> Entrar
-                    </button>
-                </form>
-                <div class="login-switch">
-                    Não tem conta? <button onclick="showRegister()">Cadastre-se</button>
-                </div>
-            </div>
-
-            <!-- Register Tab -->
-            <div id="registerTab" class="hidden">
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label class="form-label">Nome</label>
-                        <input type="text" id="regName" class="neu-input" placeholder="Seu nome completo" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="regEmail" class="neu-input" placeholder="seu@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Senha</label>
-                        <input type="password" id="regPassword" class="neu-input" placeholder="Mínimo 6 caracteres" required minlength="6">
-                    </div>
-                    <button type="submit" class="neu-btn neu-btn-accent" style="width:100%;margin-top:8px">
-                        <i class="fas fa-user-plus"></i> Cadastrar
-                    </button>
-                </form>
-                <div class="login-switch">
-                    Já tem conta? <button onclick="showLogin()">Entrar</button>
-                </div>
-            </div>
-
-            <div id="loginMsg" class="hidden"></div>
-        </div>
+<!-- ════════════════════════════════════════════
+     AUTH CONTAINER
+════════════════════════════════════════════ -->
+<div id="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>🔧 Oficina</h1>
+      <p>Inácio Adriano — Sistema de Gestão</p>
     </div>
 
-    <!-- ============ MAIN APPLICATION ============ -->
-    <div id="appScreen" class="hidden">
-
-        <!-- Top Navigation -->
-        <nav class="app-nav neu-flat">
-            <div class="nav-brand">
-                <div class="nav-brand-icon">
-                    <i class="fas fa-wrench"></i>
-                </div>
-                <span class="nav-brand-text">Oficina Inácio & Adriano</span>
-            </div>
-            <div class="nav-actions">
-                <span id="userName" class="nav-user-name"></span>
-                <button onclick="toggleTheme()" title="Alternar tema" class="neu-btn neu-btn-icon neu-btn-ghost">
-                    <i id="themeIcon" class="fas fa-moon"></i>
-                </button>
-                <button onclick="showSection('profile')" title="Perfil" class="neu-btn neu-btn-icon neu-btn-ghost">
-                    <i class="fas fa-user-cog"></i>
-                </button>
-                <button onclick="logout()" title="Sair" class="neu-btn neu-btn-icon neu-btn-ghost" style="color:var(--danger)">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Body: Sidebar + Content -->
-        <div class="app-body">
-            <!-- Sidebar -->
-            <aside class="sidebar neu-flat" id="sidebar">
-                <button class="sidebar-item active" data-section="dashboard" onclick="showSection('dashboard')">
-                    <i class="fas fa-chart-pie"></i><span>Dashboard</span>
-                </button>
-                <button class="sidebar-item" data-section="clientes" onclick="showSection('clientes')">
-                    <i class="fas fa-users"></i><span>Clientes</span>
-                </button>
-                <button class="sidebar-item" data-section="veiculos" onclick="showSection('veiculos')">
-                    <i class="fas fa-car"></i><span>Veículos</span>
-                </button>
-                <button class="sidebar-item" data-section="mecanicos" onclick="showSection('mecanicos')">
-                    <i class="fas fa-hard-hat"></i><span>Mecânicos</span>
-                </button>
-                <button class="sidebar-item" data-section="pecas" onclick="showSection('pecas')">
-                    <i class="fas fa-cogs"></i><span>Peças</span>
-                </button>
-                <button class="sidebar-item" data-section="fornecedores" onclick="showSection('fornecedores')">
-                    <i class="fas fa-truck"></i><span>Fornecedores</span>
-                </button>
-                <button class="sidebar-item" data-section="ordens" onclick="showSection('ordens')">
-                    <i class="fas fa-clipboard-list"></i><span>Ordens</span>
-                </button>
-                <button class="sidebar-item" data-section="pagamentos" onclick="showSection('pagamentos')">
-                    <i class="fas fa-credit-card"></i><span>Pagamentos</span>
-                </button>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="main-content">
-                <div id="sec-dashboard" class="section animate-fade-in"></div>
-                <div id="sec-clientes" class="section hidden"></div>
-                <div id="sec-veiculos" class="section hidden"></div>
-                <div id="sec-mecanicos" class="section hidden"></div>
-                <div id="sec-pecas" class="section hidden"></div>
-                <div id="sec-fornecedores" class="section hidden"></div>
-                <div id="sec-ordens" class="section hidden"></div>
-                <div id="sec-pagamentos" class="section hidden"></div>
-                <div id="sec-profile" class="section hidden"></div>
-            </main>
-        </div>
+    <!-- Login -->
+    <div id="screen-login" class="auth-screen active">
+      <h2 class="auth-title">Entrar</h2>
+      <p class="auth-subtitle">Acesse sua conta para continuar.</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input id="login-email" type="email" class="form-input" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input id="login-senha" type="password" class="form-input" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar</button>
+      <div style="display:flex;justify-content:space-between;margin-top:14px;">
+        <span class="link" onclick="showScreen('screen-forgot')">Esqueci minha senha</span>
+        <span class="link" onclick="showScreen('screen-register')">Criar conta</span>
+      </div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
+    <!-- Register -->
+    <div id="screen-register" class="auth-screen">
+      <h2 class="auth-title">Criar conta</h2>
+      <p class="auth-subtitle">Preencha seus dados para se cadastrar.</p>
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input id="reg-nome" type="text" class="form-input" placeholder="Seu nome" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input id="reg-email" type="email" class="form-input" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input id="reg-senha" type="password" class="form-input" placeholder="Mín. 6 caracteres" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()">Cadastrar</button>
+      <div style="text-align:center;margin-top:14px;">
+        <span class="link" onclick="showScreen('screen-login')">Já tenho conta</span>
+      </div>
+    </div>
 
-    <!-- Modal Container -->
-    <div id="modal" class="hidden"></div>
+    <!-- Verify Email -->
+    <div id="screen-verify-email" class="auth-screen">
+      <h2 class="auth-title">Verificar email</h2>
+      <p class="auth-subtitle" id="verify-email-subtitle">Digite o código de 6 dígitos enviado para seu email.</p>
+      <div class="code-input-group" id="verify-code-inputs">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doVerifyEmail()">Verificar</button>
+      <div style="text-align:center;margin-top:14px;">
+        <span class="link" onclick="doResendVerification()">Reenviar código</span>
+      </div>
+    </div>
 
-    <!-- Scripts -->
-    <script src="/js/app.js"></script>
+    <!-- Forgot Password -->
+    <div id="screen-forgot" class="auth-screen">
+      <h2 class="auth-title">Redefinir senha</h2>
+      <p class="auth-subtitle">Informe seu email e enviaremos um código de verificação.</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input id="forgot-email" type="email" class="form-input" placeholder="seu@email.com" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doForgotPassword()">Enviar código</button>
+      <div style="text-align:center;margin-top:14px;">
+        <span class="link" onclick="showScreen('screen-login')">Voltar ao login</span>
+      </div>
+    </div>
+
+    <!-- Reset Password -->
+    <div id="screen-reset" class="auth-screen">
+      <h2 class="auth-title">Nova senha</h2>
+      <p class="auth-subtitle">Digite o código recebido e sua nova senha.</p>
+      <div class="code-input-group" id="reset-code-inputs">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nova senha</label>
+        <input id="reset-senha" type="password" class="form-input" placeholder="Mín. 6 caracteres" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doResetPassword()">Redefinir senha</button>
+    </div>
+
+    <!-- Verify 2FA -->
+    <div id="screen-2fa" class="auth-screen">
+      <h2 class="auth-title">Verificação em 2 etapas</h2>
+      <p class="auth-subtitle">Um código foi enviado para seu email. Ele expira em 10 minutos.</p>
+      <div class="code-input-group" id="twofa-code-inputs">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doVerify2FA()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     APP CONTAINER
+════════════════════════════════════════════ -->
+<div id="app-container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h2>🔧 Oficina</h2>
+      <p>Inácio Adriano</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a data-page="dashboard" onclick="navigateTo('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <div class="nav-section">Atendimento</div>
+      <a data-page="ordens-servico" onclick="navigateTo('ordens-servico')">
+        <span class="nav-icon">📋</span> Ordens de Serviço
+      </a>
+      <div class="nav-section">Cadastros</div>
+      <a data-page="clientes" onclick="navigateTo('clientes')">
+        <span class="nav-icon">👤</span> Clientes
+      </a>
+      <a data-page="veiculos" onclick="navigateTo('veiculos')">
+        <span class="nav-icon">🚗</span> Veículos
+      </a>
+      <a data-page="mecanicos" onclick="navigateTo('mecanicos')">
+        <span class="nav-icon">🔨</span> Mecânicos
+      </a>
+      <a data-page="pecas" onclick="navigateTo('pecas')">
+        <span class="nav-icon">⚙️</span> Peças
+      </a>
+      <div class="nav-section">Financeiro</div>
+      <a data-page="pagamentos" onclick="navigateTo('pagamentos')">
+        <span class="nav-icon">💳</span> Pagamentos
+      </a>
+      <div class="nav-section">Configurações</div>
+      <a data-page="perfil" onclick="navigateTo('perfil')">
+        <span class="nav-icon">⚙️</span> Meu Perfil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="navigateTo('perfil')">
+        <div class="user-avatar" id="sidebar-avatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Usuário</div>
+          <div class="user-role" id="sidebar-role">USER</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="color:var(--gray-400);margin-top:8px;" onclick="doLogout()">
+        ↩ Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="topbar-badge" title="Peças com estoque baixo" onclick="navigateTo('pecas')">
+          ⚠️ <span class="badge-dot" id="stock-badge"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('perfil')">👤 Perfil</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <!-- ── Dashboard ── -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats-grid" id="dash-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">📋</div>
+            <div class="stat-info">
+              <div class="stat-label">OS Aguardando</div>
+              <div class="stat-value" id="stat-aguardando">–</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">🔧</div>
+            <div class="stat-info">
+              <div class="stat-label">Em Andamento</div>
+              <div class="stat-value" id="stat-andamento">–</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+              <div class="stat-label">Receita do Mês</div>
+              <div class="stat-value" id="stat-receita">–</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">⚠️</div>
+            <div class="stat-info">
+              <div class="stat-label">Estoque Baixo</div>
+              <div class="stat-value" id="stat-estoque">–</div>
+            </div>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">OS por Status</div>
+            <canvas id="chart-status" height="200"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Receita por Semana</div>
+            <canvas id="chart-receita" height="200"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Top Mecânicos (OS Finalizadas)</div>
+            <canvas id="chart-mecanicos" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Ordens de Serviço (lista) ── -->
+      <div id="page-ordens-servico" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Ordens de Serviço</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('os')">+ Nova OS</button>
+          </div>
+          <div class="filters">
+            <select class="filter-input" id="os-filter-status" onchange="loadOS()">
+              <option value="">Todos os status</option>
+              <option value="Aguardando">Aguardando</option>
+              <option value="Em Andamento">Em Andamento</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Cliente</th><th>Veículo</th>
+                  <th>Data Entrada</th><th>KM</th><th>Status</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="os-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="os-pagination-info"></span>
+            <div class="pagination-controls" id="os-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OS Detalhe ── -->
+      <div id="page-os-detalhe" class="page">
+        <div class="os-detail-back">
+          <button class="btn btn-outline btn-sm" onclick="navigateTo('ordens-servico')">← Voltar</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+        <div id="os-detalhe-content"></div>
+      </div>
+
+      <!-- ── Clientes ── -->
+      <div id="page-clientes" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Clientes</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('cliente')">+ Novo Cliente</button>
+          </div>
+          <div class="filters">
+            <input class="filter-input" type="text" id="cliente-search" placeholder="Buscar por nome ou CPF…" oninput="loadClientes()" />
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Ações</th></tr></thead>
+              <tbody id="clientes-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="clientes-pagination-info"></span>
+            <div class="pagination-controls" id="clientes-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Veículos ── -->
+      <div id="page-veiculos" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Veículos</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('veiculo')">+ Novo Veículo</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Placa</th><th>Modelo</th><th>Ano</th><th>Proprietário</th><th>Ações</th></tr></thead>
+              <tbody id="veiculos-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="veiculos-pagination-info"></span>
+            <div class="pagination-controls" id="veiculos-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Mecânicos ── -->
+      <div id="page-mecanicos" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Mecânicos</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('mecanico')">+ Novo Mecânico</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>Especialidade</th><th>Comissão %</th><th>Ações</th></tr></thead>
+              <tbody id="mecanicos-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="mecanicos-pagination-info"></span>
+            <div class="pagination-controls" id="mecanicos-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Peças ── -->
+      <div id="page-pecas" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Peças</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('peca')">+ Nova Peça</button>
+          </div>
+          <div class="filters">
+            <input class="filter-input" type="text" id="peca-search" placeholder="Buscar por nome…" oninput="loadPecas()" />
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>Categoria</th><th>Fornecedor</th><th>Preço</th><th>Est. Mín.</th><th>Ações</th></tr></thead>
+              <tbody id="pecas-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="pecas-pagination-info"></span>
+            <div class="pagination-controls" id="pecas-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Pagamentos ── -->
+      <div id="page-pagamentos" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pagamentos</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('pagamento')">+ Registrar Pagamento</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>OS #</th><th>Valor</th><th>Data</th><th>Forma</th><th>Ações</th></tr></thead>
+              <tbody id="pagamentos-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="pagamentos-pagination-info"></span>
+            <div class="pagination-controls" id="pagamentos-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Perfil ── -->
+      <div id="page-perfil" class="page">
+        <div class="card" style="max-width:540px;">
+          <div class="card-header"><span class="card-title">Meu Perfil</span></div>
+          <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input id="perfil-nome" type="text" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input id="perfil-email" type="email" class="form-input" />
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()">Salvar</button>
+          <div class="divider"></div>
+          <div class="card-title" style="margin-bottom:16px;">Verificação em 2 Etapas</div>
+          <p class="text-muted text-sm" style="margin-bottom:12px;">Quando ativo, um código será enviado ao seu email a cada login.</p>
+          <div style="display:flex;gap:10px;">
+            <button id="btn-2fa-on"  class="btn btn-success btn-sm" onclick="toggle2FA(true)">✅ Ativar 2FA</button>
+            <button id="btn-2fa-off" class="btn btn-outline btn-sm" onclick="toggle2FA(false)">❌ Desativar 2FA</button>
+          </div>
+          <div class="divider"></div>
+          <div class="card-title" style="margin-bottom:16px;">Alterar Senha</div>
+          <div class="form-group">
+            <label class="form-label">Senha Atual</label>
+            <input id="pwd-atual" type="password" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nova Senha</label>
+            <input id="pwd-nova" type="password" class="form-input" />
+          </div>
+          <button class="btn btn-warning" onclick="changePassword()">Alterar Senha</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Modal</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/js/app.js"></script>
 </body>
 </html>

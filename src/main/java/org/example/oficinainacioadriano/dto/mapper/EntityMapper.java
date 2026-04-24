@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 public class EntityMapper {
 
     public UsuarioResponse toResponse(Usuario u) {
-        return new UsuarioResponse(u.getId(), u.getNome(), u.getEmail(), u.getRole().name(), u.getAtivo());
+        return new UsuarioResponse(u.getId(), u.getNome(), u.getEmail(), u.getRole().name(), u.getAtivo(),
+                u.getEmailVerificado(), u.getDoisFatoresAtivo());
     }
 
     public StatusOrdemServicoResponse toResponse(StatusOrdemServico s) {

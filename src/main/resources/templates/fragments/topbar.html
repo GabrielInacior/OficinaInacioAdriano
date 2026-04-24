@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="topbar" class="topbar">
+  <div class="topbar-title" id="topbar-title">Dashboard</div>
+  <div class="topbar-actions">
+    <div class="topbar-badge" title="Peças com estoque baixo" onclick="navigateTo('pecas')">
+      ⚠️ <span class="badge-dot" id="stock-badge"></span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="navigateTo('perfil')">👤 Perfil</button>
+  </div>
+</header>
+
+</body>
+</html>

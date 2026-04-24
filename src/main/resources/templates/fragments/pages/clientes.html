@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="page-clientes" id="page-clientes" class="page">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Clientes</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('cliente')">+ Novo Cliente</button>
+    </div>
+    <div class="filters">
+      <input class="filter-input" type="text" id="cliente-search" placeholder="Buscar por nome ou CPF…" oninput="loadClientes()" />
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Ações</th></tr></thead>
+        <tbody id="clientes-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span class="pagination-info" id="clientes-pagination-info"></span>
+      <div class="pagination-controls" id="clientes-pagination-controls"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
