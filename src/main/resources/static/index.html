@@ -6,6 +6,7 @@
   <title>Oficina Inácio Adriano</title>
   <link rel="stylesheet" href="/css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -15,7 +16,7 @@
 <div id="auth-container">
   <div class="auth-card">
     <div class="auth-logo">
-      <h1>🔧 Oficina</h1>
+      <h1><i data-lucide="wrench"></i> Oficina</h1>
       <p>Inácio Adriano — Sistema de Gestão</p>
     </div>
 
@@ -136,37 +137,56 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h2>🔧 Oficina</h2>
+      <h2><i data-lucide="wrench" class="lucide-sm"></i> Oficina</h2>
       <p>Inácio Adriano</p>
     </div>
     <nav class="sidebar-nav">
       <a data-page="dashboard" onclick="navigateTo('dashboard')">
-        <span class="nav-icon">📊</span> Dashboard
+        <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
       </a>
       <div class="nav-section">Atendimento</div>
       <a data-page="ordens-servico" onclick="navigateTo('ordens-servico')">
-        <span class="nav-icon">📋</span> Ordens de Serviço
+        <i data-lucide="clipboard-list" class="nav-icon"></i> Ordens de Serviço
       </a>
       <div class="nav-section">Cadastros</div>
       <a data-page="clientes" onclick="navigateTo('clientes')">
-        <span class="nav-icon">👤</span> Clientes
+        <i data-lucide="users" class="nav-icon"></i> Clientes
       </a>
       <a data-page="veiculos" onclick="navigateTo('veiculos')">
-        <span class="nav-icon">🚗</span> Veículos
+        <i data-lucide="car" class="nav-icon"></i> Veículos
       </a>
       <a data-page="mecanicos" onclick="navigateTo('mecanicos')">
-        <span class="nav-icon">🔨</span> Mecânicos
+        <i data-lucide="hard-hat" class="nav-icon"></i> Mecânicos
       </a>
       <a data-page="pecas" onclick="navigateTo('pecas')">
-        <span class="nav-icon">⚙️</span> Peças
+        <i data-lucide="package" class="nav-icon"></i> Peças
+      </a>
+      <a data-page="fornecedores" onclick="navigateTo('fornecedores')">
+        <i data-lucide="truck" class="nav-icon"></i> Fornecedores
+      </a>
+      <a data-page="modelos" onclick="navigateTo('modelos')">
+        <i data-lucide="tag" class="nav-icon"></i> Modelos
+      </a>
+      <div class="nav-section">Tabelas</div>
+      <a data-page="categorias" onclick="navigateTo('categorias')">
+        <i data-lucide="layers" class="nav-icon"></i> Categorias
+      </a>
+      <a data-page="especialidades" onclick="navigateTo('especialidades')">
+        <i data-lucide="award" class="nav-icon"></i> Especialidades
+      </a>
+      <a data-page="formas-pagamento" onclick="navigateTo('formas-pagamento')">
+        <i data-lucide="wallet" class="nav-icon"></i> Formas de Pagamento
+      </a>
+      <a data-page="cidades" onclick="navigateTo('cidades')">
+        <i data-lucide="map-pin" class="nav-icon"></i> Cidades
       </a>
       <div class="nav-section">Financeiro</div>
       <a data-page="pagamentos" onclick="navigateTo('pagamentos')">
-        <span class="nav-icon">💳</span> Pagamentos
+        <i data-lucide="credit-card" class="nav-icon"></i> Pagamentos
       </a>
       <div class="nav-section">Configurações</div>
       <a data-page="perfil" onclick="navigateTo('perfil')">
-        <span class="nav-icon">⚙️</span> Meu Perfil
+        <i data-lucide="user-cog" class="nav-icon"></i> Meu Perfil
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -178,7 +198,7 @@
         </div>
       </div>
       <button class="btn btn-ghost btn-full" style="color:var(--gray-400);margin-top:8px;" onclick="doLogout()">
-        ↩ Sair
+        <i data-lucide="log-out" style="width:14px;height:14px;"></i> Sair
       </button>
     </div>
   </aside>
@@ -189,9 +209,13 @@
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-actions">
         <div class="topbar-badge" title="Peças com estoque baixo" onclick="navigateTo('pecas')">
-          ⚠️ <span class="badge-dot" id="stock-badge"></span>
+          <i data-lucide="alert-triangle" style="color:var(--warning);width:18px;height:18px;"></i>
+          <span class="badge-dot" id="stock-badge"></span>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="navigateTo('perfil')">👤 Perfil</button>
+        <button class="btn btn-ghost btn-icon" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+          <i data-lucide="moon" style="width:16px;height:16px;" id="theme-icon"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('perfil')"><i data-lucide="user" style="width:14px;height:14px;"></i> Perfil</button>
       </div>
     </header>
 
@@ -201,28 +225,28 @@
       <div id="page-dashboard" class="page active">
         <div class="stats-grid" id="dash-stats-grid">
           <div class="stat-card">
-            <div class="stat-icon blue">📋</div>
+            <div class="stat-icon blue"><i data-lucide="clipboard-list"></i></div>
             <div class="stat-info">
               <div class="stat-label">OS Aguardando</div>
               <div class="stat-value" id="stat-aguardando">–</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon orange">🔧</div>
+            <div class="stat-icon orange"><i data-lucide="wrench"></i></div>
             <div class="stat-info">
               <div class="stat-label">Em Andamento</div>
               <div class="stat-value" id="stat-andamento">–</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon green">💰</div>
+            <div class="stat-icon green"><i data-lucide="banknote"></i></div>
             <div class="stat-info">
               <div class="stat-label">Receita do Mês</div>
               <div class="stat-value" id="stat-receita">–</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon red">⚠️</div>
+            <div class="stat-icon red"><i data-lucide="package-x"></i></div>
             <div class="stat-info">
               <div class="stat-label">Estoque Baixo</div>
               <div class="stat-value" id="stat-estoque">–</div>
@@ -250,7 +274,7 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Ordens de Serviço</span>
-            <button class="btn btn-primary btn-sm" onclick="openModal('os')">+ Nova OS</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('os')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Nova OS</button>
           </div>
           <div class="filters">
             <select class="filter-input" id="os-filter-status" onchange="loadOS()">
@@ -283,7 +307,7 @@
       <div id="page-os-detalhe" class="page">
         <div class="os-detail-back">
           <button class="btn btn-outline btn-sm" onclick="navigateTo('ordens-servico')">← Voltar</button>
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+          <button class="btn btn-ghost btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:14px;height:14px;"></i> Imprimir</button>
         </div>
         <div id="os-detalhe-content"></div>
       </div>
@@ -293,7 +317,7 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Clientes</span>
-            <button class="btn btn-primary btn-sm" onclick="openModal('cliente')">+ Novo Cliente</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('cliente')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Novo Cliente</button>
           </div>
           <div class="filters">
             <input class="filter-input" type="text" id="cliente-search" placeholder="Buscar por nome ou CPF…" oninput="loadClientes()" />
@@ -316,7 +340,7 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Veículos</span>
-            <button class="btn btn-primary btn-sm" onclick="openModal('veiculo')">+ Novo Veículo</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('veiculo')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Novo Veículo</button>
           </div>
           <div class="table-wrapper">
             <table>
@@ -336,7 +360,7 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Mecânicos</span>
-            <button class="btn btn-primary btn-sm" onclick="openModal('mecanico')">+ Novo Mecânico</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('mecanico')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Novo Mecânico</button>
           </div>
           <div class="table-wrapper">
             <table>
@@ -356,7 +380,7 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Peças</span>
-            <button class="btn btn-primary btn-sm" onclick="openModal('peca')">+ Nova Peça</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('peca')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Nova Peça</button>
           </div>
           <div class="filters">
             <input class="filter-input" type="text" id="peca-search" placeholder="Buscar por nome…" oninput="loadPecas()" />
@@ -379,7 +403,7 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Pagamentos</span>
-            <button class="btn btn-primary btn-sm" onclick="openModal('pagamento')">+ Registrar Pagamento</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('pagamento')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Registrar Pagamento</button>
           </div>
           <div class="table-wrapper">
             <table>
@@ -411,8 +435,8 @@
           <div class="card-title" style="margin-bottom:16px;">Verificação em 2 Etapas</div>
           <p class="text-muted text-sm" style="margin-bottom:12px;">Quando ativo, um código será enviado ao seu email a cada login.</p>
           <div style="display:flex;gap:10px;">
-            <button id="btn-2fa-on"  class="btn btn-success btn-sm" onclick="toggle2FA(true)">✅ Ativar 2FA</button>
-            <button id="btn-2fa-off" class="btn btn-outline btn-sm" onclick="toggle2FA(false)">❌ Desativar 2FA</button>
+            <button id="btn-2fa-on"  class="btn btn-success btn-sm" onclick="toggle2FA(true)"><i data-lucide="shield-check" style="width:13px;height:13px;"></i> Ativar 2FA</button>
+            <button id="btn-2fa-off" class="btn btn-outline btn-sm" onclick="toggle2FA(false)"><i data-lucide="shield-off" style="width:13px;height:13px;"></i> Desativar 2FA</button>
           </div>
           <div class="divider"></div>
           <div class="card-title" style="margin-bottom:16px;">Alterar Senha</div>
@@ -428,6 +452,112 @@
         </div>
       </div>
 
+      <!-- ── Modelos ── -->
+      <div id="page-modelos" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Modelos de Veículo</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modelo')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Novo Modelo</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>Ações</th></tr></thead>
+              <tbody id="modelos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Fornecedores ── -->
+      <div id="page-fornecedores" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Fornecedores</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('fornecedor')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Novo Fornecedor</button>
+          </div>
+          <div class="filters">
+            <input class="filter-input" type="text" id="fornecedor-search" placeholder="Buscar por razão social…" oninput="loadFornecedores()" />
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Razão Social</th><th>CNPJ</th><th>Cidade</th><th>Ações</th></tr></thead>
+              <tbody id="fornecedores-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span class="pagination-info" id="fornecedores-pagination-info"></span>
+            <div class="pagination-controls" id="fornecedores-pagination-controls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Categorias ── -->
+      <div id="page-categorias" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Categorias de Peças</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('categoria')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Nova Categoria</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>Ações</th></tr></thead>
+              <tbody id="categorias-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Especialidades ── -->
+      <div id="page-especialidades" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Especialidades</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('especialidade')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Nova Especialidade</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>Ações</th></tr></thead>
+              <tbody id="especialidades-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Formas de Pagamento ── -->
+      <div id="page-formas-pagamento" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Formas de Pagamento</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('forma-pagamento')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Nova Forma</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>Ações</th></tr></thead>
+              <tbody id="formas-pagamento-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Cidades ── -->
+      <div id="page-cidades" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Cidades</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('cidade')"><i data-lucide="plus" style="width:13px;height:13px;"></i> Nova Cidade</button>
+          </div>
+          <div class="filters">
+            <input class="filter-input" type="text" id="cidade-search" placeholder="Buscar por nome…" oninput="loadCidades()" />
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Nome</th><th>UF</th><th>Ações</th></tr></thead>
+              <tbody id="cidades-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
@@ -439,7 +569,7 @@
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title" id="modal-title">Modal</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" onclick="closeModal()"><i data-lucide="x" style="width:16px;height:16px;display:block;"></i></button>
     </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer" id="modal-footer">
@@ -454,4 +584,5 @@
 
 <script src="/js/app.js"></script>
 </body>
+
 </html>

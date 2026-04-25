@@ -81,15 +81,53 @@ ALTER TABLE usuarios ADD COLUMN temp_token_2fa_expira_em TIMESTAMP;
 ### 2.1 Estilo geral
 
 - Substituir neumorphism por design clean/moderno
-- Paleta: fundo `#F8FAFC`, primário `#2563EB`, sucesso `#16A34A`, alerta `#EA580C`, erro `#DC2626`
+- **Tema claro e tema escuro** com toggle no topbar, persistido em `localStorage`
+- Variáveis CSS para todas as cores — troca de tema via classe `.dark` no `<html>`
+- Paleta clara: fundo `#F8FAFC`, primário `#2563EB`, sucesso `#16A34A`, alerta `#EA580C`, erro `#DC2626`
+- Paleta escura: fundo `#0F172A`, cards `#1E293B`, texto `#E2E8F0`
+- **Ícones:** Lucide Icons via CDN (`https://unpkg.com/lucide@latest`) — substituir todos os emojis do HTML e JS por `<i data-lucide="..."></i>`. Nenhum emoji no código.
 - Tipografia: Inter via Google Fonts
 - Sidebar fixa (240px) com logo, navegação por módulo, avatar do usuário no rodapé
-- Topbar com título da página atual, ícone de notificações (estoque baixo), nome do usuário
+- Topbar com título da página atual, ícone de notificações (estoque baixo), toggle de tema, nome do usuário
 - Cards com `border-radius: 12px`, sombra `box-shadow: 0 1px 3px rgba(0,0,0,0.1)`
 - Botões com estados hover/active/disabled bem definidos
 - Totalmente responsivo (sidebar colapsa em mobile)
 
-### 2.2 Telas reformuladas
+### 2.2 Validações de formulário
+
+Todos os formulários devem ter validação visual inline (borda vermelha + mensagem de erro abaixo do campo) e feedback via toast:
+
+| Campo | Validação |
+|-------|-----------|
+| CPF | Máscara `000.000.000-00`, validação de dígitos verificadores |
+| Telefone | Máscara `(00) 00000-0000` ou `(00) 0000-0000` |
+| Placa | Máscara `AAA-0000` ou Mercosul `AAA0A00` |
+| CNPJ | Máscara `00.000.000/0000-00`, validação de dígitos verificadores |
+| Email | Regex padrão RFC |
+| Senha | Mínimo 6 caracteres |
+| Campos obrigatórios | Destacados com `*`, bloqueiam submit se vazios |
+| Números | Não negativos onde aplicável (KM, preço, estoque) |
+
+Validação acontece on-blur e on-submit. Campos inválidos ficam com borda vermelha e mensagem de erro abaixo. Campos válidos ganham borda verde sutil.
+
+### 2.3 Dropdowns com dados do backend (fluxo completo)
+
+Os seguintes dropdowns dependem de dados cadastrados e devem ser carregados corretamente:
+
+| Formulário | Dropdown | Endpoint |
+|------------|----------|----------|
+| Veículo | Modelo | `GET /api/modelos?size=200` |
+| Veículo | Cliente | `GET /api/clientes?size=200` |
+| Peça | Categoria | `GET /api/categorias-pecas` |
+| Peça | Fornecedor | `GET /api/fornecedores?size=200` |
+| Mecânico | Especialidade | `GET /api/especialidades` |
+| OS | Veículo | `GET /api/veiculos?size=200` |
+| Pagamento | OS | `GET /api/ordens-servico?size=200` |
+| Pagamento | Forma | `GET /api/formas-pagamento` |
+
+Endpoints de listagem de auxiliares (categorias, especialidades, formas de pagamento) devem retornar lista simples sem paginação quando chamados sem parâmetros. Se o dropdown vier vazio, exibir mensagem "Nenhum item cadastrado" e desabilitar o campo.
+
+### 2.4 Telas reformuladas
 
 Todas as telas de CRUD ganham:
 - Tabelas com header fixo, linhas zebradas, hover highlight
@@ -97,14 +135,14 @@ Todas as telas de CRUD ganham:
 - Filtros/busca no topo da tabela
 - Formulários em **modal** com validação inline
 - Badges coloridos para status
-- Ações (editar/excluir) como ícones na última coluna
+- Ações (editar/excluir) como ícones Lucide na última coluna (sem texto)
 
-### 2.3 Telas novas
+### 2.5 Telas novas
 
 - Tela de verificação de email (após cadastro)
 - Tela de redefinição de senha (esqueci minha senha)
 - Tela de verificação 2FA (após login)
-- Tela de detalhes da OS (ver Módulo 3)
+- Tela de detalhes da OS (ver Módulo 4)
 - Tela de perfil do usuário (editar dados + toggle 2FA + alterar senha)
 
 ---

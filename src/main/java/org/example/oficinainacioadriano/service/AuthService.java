@@ -145,14 +145,14 @@ public class AuthService {
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        usuarioRepository.findByEmail(request.email()).ifPresent(usuario -> {
-            String codigo = gerarCodigo6Digitos();
-            usuario.setCodigoVerificacao(codigo);
-            usuario.setCodigoVerificacaoExpiraEm(LocalDateTime.now().plusMinutes(15));
-            usuario.setCodigoTipo("RESET_SENHA");
-            usuarioRepository.save(usuario);
-            emailService.enviarCodigoResetSenha(usuario.getEmail(), usuario.getNome(), codigo);
-        });
+        Usuario usuario = usuarioRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Email não encontrado: " + request.email()));
+        String codigo = gerarCodigo6Digitos();
+        usuario.setCodigoVerificacao(codigo);
+        usuario.setCodigoVerificacaoExpiraEm(LocalDateTime.now().plusMinutes(15));
+        usuario.setCodigoTipo("RESET_SENHA");
+        usuarioRepository.save(usuario);
+        emailService.enviarCodigoResetSenha(usuario.getEmail(), usuario.getNome(), codigo);
     }
 
     @Transactional
